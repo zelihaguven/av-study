@@ -1,0 +1,3 @@
+[tool.pytest.ini_options]
+addopts = "--import-mode=importlib -q"
+testpaths = ["common", "01-vehicle-model", "02-control", "03-tracking", "05-integration"]
