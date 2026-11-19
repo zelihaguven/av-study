@@ -18,8 +18,7 @@ cevaplayabilmek asıl hedef. Algoritmaların içine bu modülde girilmez.
 - Autoware dokümantasyonu: *Design* bölümü ve mimari genel bakış sayfaları
 - Paden ve ark. (2016) survey: giriş ve mimari bölümleri
 - Chen ve ark., *End-to-end Autonomous Driving: Challenges and Frontiers*: giriş ve modüler/E2E karşılaştırması
-- `autowarefoundation/vision_pilot`: README, release notları, sistem mimari görseli
-- PoV WG GitHub Discussions'taki son 3–4 toplantı logu (ekibin gündemi ne?)
+- [`autowarefoundation/autoware.privately-owned-vehicles`](https://github.com/autowarefoundation/autoware.privately-owned-vehicles) (VisionPilot): README, mimari görseli
 
 ## Görevler
 
@@ -27,7 +26,6 @@ cevaplayabilmek asıl hedef. Algoritmaların içine bu modülde girilmez.
 - [x] Modül arayüz tablosunu doldur (en az 6 satır, modüler stack için)
 - [x] VisionPilot için aynı tabloyu doldur. Hangi model hangi özelliği (ACC, LKAS, AEB…) besliyor?
 - [x] "Sorular" bölümündeki 6 soruyu kendi cümlelerinle cevapla
-- [ ] PoV WG toplantısına en az 1 kez dinleyici olarak katıl, `notes.md`'ye 5 madde not al
 
 ## Kabul kriteri
 
@@ -36,7 +34,6 @@ cevaplayabilmek asıl hedef. Algoritmaların içine bu modülde girilmez.
 - [x] Arayüz tablosunda her satır için giriş, çıkış ve tipik frekans (Hz) var.
       Frekansı bilmiyorsan "?" yaz ve kaynağını bulunca güncelle. Uydurma sayı yok.
 - [x] 6 sorunun her biri en az 3 cümle ve en az birinde kaynak referansı var.
-- [ ] `docs/reading-log.md`'de bu modülün okumaları dolu.
 
 ## Yazı
 

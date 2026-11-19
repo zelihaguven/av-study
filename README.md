@@ -18,7 +18,7 @@ tek kameralı L2 ADAS sistemi **VisionPilot** (Autoware Privately Owned Vehicle 
 
 | Modül | Konu | Ne öğreniliyor | Durum |
 |---|---|---|---|
-| [`00-architecture`](00-architecture/) | Mimari | Modüler stack, VisionPilot veri akışı, modül arayüzleri | 🟨 |
+| [`00-architecture`](00-architecture/) | Mimari | Modüler stack, VisionPilot veri akışı, modül arayüzleri | ✅ |
 | [`01-vehicle-model`](01-vehicle-model/) | Kinematik bisiklet modeli | Diğer modüllerin test edileceği simülatör | 🟨 |
 | [`02-control`](02-control/) | Yanal/boylamsal kontrol | PID, Pure Pursuit, Stanley karşılaştırması | 🟨 |
 | [`03-tracking`](03-tracking/) | Durum kestirimi | Kalman filtresi: şerit ve öndeki araç (CIPO) | 🟨 |
@@ -73,7 +73,6 @@ pytest
 
 ## Dokümanlar
 
-- [`docs/reading-log.md`](docs/reading-log.md) — okunanlar ve her birinden 3 cümlelik çıkarım
 - [`docs/glossary.md`](docs/glossary.md) — terimler sözlüğü (TR/EN)
 - [`docs/writing-plan.md`](docs/writing-plan.md) — modül ↔ Medium yazısı eşleşmesi
 
