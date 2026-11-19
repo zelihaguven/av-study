@@ -30,23 +30,43 @@ Modül sonunda şunları açıklayabilmelisin:
 |---|---|
 | `src/perception_sim.py` | `measure_lane(state, path, rng, noise, p_drop)` → `z` veya `None` |
 | `src/lane_keeping.py` | `LaneTracker` (03'ün `KalmanFilter`'ını kullanır, 3 durumlu model senin), `lane_keep_steer(...)` |
+| `src/plots.py` | 3 grafik + sayısal özet: `python 05-integration/src/plots.py` (repo kökünden) |
 | `src/loop.py` | `run(path, v, noise, p_drop, use_tracker, seed)` → zaman, durumlar, direksiyon, gerçek CTE |
 
 ## Görevler
 
-- [ ] Sentetik algı + kayıp
-- [ ] 3 durumlu şerit modeli `[e_y, e_ψ, κ]`, direksiyonu girdi olarak kullanan tahmin adımı
-- [ ] Feedforward (`κ`'dan) + feedback (`e_y`, `e_ψ`'den) direksiyon
-- [ ] `results/closed_loop.png`: tracker'lı / tracker'sız CTE ve direksiyon, alt alta
-- [ ] `results/dropout_sweep.png`: kayıp oranı ∈ {0, 0.1, 0.2, 0.3, 0.5} vs maks |CTE|
-- [ ] `results/ff_ablation.png`: feedforward açık/kapalı
-- [ ] `notes.md`: 3 soruya grafiklere dayanan cevaplar ve VisionPilot mimarisiyle karşılaştırma (00'daki diyagrama atıf)
+- [x] Sentetik algı + kayıp
+- [x] 3 durumlu şerit modeli `[e_y, e_ψ, κ]`, direksiyonu girdi olarak kullanan tahmin adımı
+- [x] Feedforward (`κ`'dan) + feedback (`e_y`, `e_ψ`'den) direksiyon
+- [x] `results/closed_loop.png`: tracker'lı / tracker'sız CTE ve direksiyon, alt alta
+- [x] `results/dropout_sweep.png`: kayıp oranı ∈ {0, 0.1, 0.2, 0.3, 0.5} vs maks |CTE| (çöküşü göstermek için 0.7, 0.8, 0.9 da eklendi)
+- [x] `results/ff_ablation.png`: feedforward açık/kapalı
+- [x] `notes.md`: 3 soruya grafiklere dayanan cevaplar ve VisionPilot mimarisiyle karşılaştırma (00'daki diyagrama atıf)
+
+## Sonuçlar
+
+| %10 kayıp, seed 0 | Gerçek CTE RMS | Direksiyon hızı RMS |
+|---|---|---|
+| Takipsiz | 13,7 cm | 130 °/s |
+| Takipli | 15,2 cm | 19 °/s |
+
+Takip katmanı düşük kayıpta yanal hatayı değil direksiyonu düzeltiyor (araç zaten hızlı gürültüyü
+süzüyor). Yüksek kayıpta ise sistemi ayakta tutan o: p = 0,8'de medyan maks sapma takipli 0,84 m,
+takipsiz 4,6 m. Feedforward virajdaki 58 cm'lik kalıcı sapmayı 3,5 cm'e indiriyor.
+
+![Kapalı çevrim](results/closed_loop.png)
+
+![Kayıp taraması](results/dropout_sweep.png)
+
+![Feedforward açık/kapalı](results/ff_ablation.png)
+
+Yorumlar, 3 sorunun cevabı ve VisionPilot'tan 8 fark: [`notes.md`](notes.md).
 
 ## Kabul kriteri
 
-- [ ] `pytest 05-integration` tamamen yeşil
-- [ ] 3 grafik üretilmiş, README'den link verilmiş
-- [ ] `notes.md`'de modelin VisionPilot'tan **nerede farklı olduğu** en az 3 maddeyle yazılmış (dürüstlük bölümü)
+- [x] `pytest 05-integration` tamamen yeşil
+- [x] 3 grafik üretilmiş, README'den link verilmiş
+- [x] `notes.md`'de modelin VisionPilot'tan **nerede farklı olduğu** en az 3 maddeyle yazılmış (dürüstlük bölümü)
 
 ## Yazı
 

@@ -23,7 +23,7 @@ tek kameralı L2 ADAS sistemi **VisionPilot** (Autoware Privately Owned Vehicle 
 | [`02-control`](02-control/) | Yanal/boylamsal kontrol | PID, Pure Pursuit, Stanley karşılaştırması | ✅ |
 | [`03-tracking`](03-tracking/) | Durum kestirimi | Kalman filtresi: şerit ve öndeki araç (CIPO) | ✅ |
 | [`04-perception`](04-perception/) | Öğrenilmiş algı | EgoLanes / AutoSteer çıktılarını okuma ve yorumlama | 🟨 |
-| [`05-integration`](05-integration/) | Kapalı çevrim | Algı → takip → kontrol: mini VisionPilot | 🟨 |
+| [`05-integration`](05-integration/) | Kapalı çevrim | Algı → takip → kontrol: mini VisionPilot | ✅ |
 | [`common`](common/) | Ortak araçlar | Referans yollar, metrikler | ✅ |
 | [`stanley-vs-pp`](stanley-vs-pp/) | Hızlı demo | Bisiklet modelinde Pure Pursuit ve Stanley, S-virajı karşılaştırması (testsiz, bağımsız) | ✅ |
 

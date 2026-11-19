@@ -17,9 +17,15 @@ class KalmanFilter:
     def P(self) -> np.ndarray:
         return self._P
 
-    def predict(self, F: np.ndarray, Q: np.ndarray) -> None:
-        """x ← F x,  P ← F P Fᵀ + Q"""
+    def predict(self, F: np.ndarray, Q: np.ndarray,
+                B: np.ndarray | None = None, u: np.ndarray | float | None = None) -> None:
+        """x ← F x (+ B u),  P ← F P Fᵀ + Q
+
+        B, u isteğe bağlı kontrol girdisi (ör. 05'te direksiyon). Bilinen bir girdi belirsizlik eklemez.
+        """
         self._x = F @ self._x
+        if B is not None and u is not None:
+            self._x = self._x + np.asarray(B, dtype=float) @ np.atleast_1d(np.asarray(u, dtype=float))
         P = F @ self._P @ F.T + Q
         self._P = 0.5 * (P + P.T)
 
