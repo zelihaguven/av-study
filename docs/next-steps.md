@@ -25,11 +25,9 @@ geçerli olduğunu kontrol et.
 
 1. **AutoSpeed çift sigmoid (en güçlü aday).** ONNX çıktısı zaten olasılık (`Concat(kutu, Sigmoid(sınıf))`),
    `modules/models/src/auto_speed.cpp:139` ikinci kez sigmoid uyguluyor; `conf_thres = 0.6` aslında 0,405.
-   - [ ] `autowarefoundation/auto_speed` reposunda eğitim/inference Python kodunun çıktıya sigmoid uygulayıp
-     uygulamadığına bak (export'taki sigmoid bilinçli mi?)
-   - [ ] Etkiyi ölç: aynı videoda iki eşik davranışıyla (C++ birebir / düzeltilmiş) CIPO kare sayısı ve yanlış alarm
-   - [ ] Issue taslağı: belirti, kanıt (ONNX grafiği + satır), etki, iki çözüm seçeneği. Taslak burada, kullanıcı onayı
-     olmadan GitHub'a gönderilmez.
+   - [x] `auto_speed` Python kodu: çift sigmoid orada da var; eğitim/doğrulama çıktıyı olasılık olarak kullanıyor
+   - [x] Etkiyi ölç: CIPO kareleri 109 → 25 (challenge), kaybolanlar gerçek uzak araçlar (etiket yok, kesinlik ölçülmedi)
+   - [x] Issue taslağı: `docs/contributions/autospeed-double-sigmoid.md`. Gönderme kararı kullanıcıda; kontrol listesi taslakta.
 2. **Kontrol periyodu tutarsızlığı.** `modules/safety_guardian/planning/include/planning/config.hpp`: yorum "50Hz",
    değer `dt = 0.05` (20 Hz). Füzyon ise `dt = 0.10` (10 Hz) varsayıyor ve `update()` dt'siz çağrılıyor
    (`inference.cpp:207`).

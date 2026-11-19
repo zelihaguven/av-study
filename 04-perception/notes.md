@@ -85,9 +85,12 @@ farklı bir kamera, o yüzden kendi `H`'sini kurdum (`udacity_calibration()`):
   geçirirdi.
 - `tests/test_postprocess.py::test_autospeed_double_sigmoid_lowers_threshold` bunu bir örnekle gösteriyor.
   `postprocess_autospeed(..., apply_sigmoid=False)` düzeltilmiş hâli.
-- Bu PoV WG'ye küçük ve somut bir katkı adayı: ya C++'tan sigmoid kaldırılmalı ve eşik yeniden seçilmeli, ya da
-  export'taki sigmoid kaldırılmalı. Hangisinin doğru olduğu eğitim kodunun ne beklediğine bağlı; issue açmadan
-  önce `auto_speed` reposundaki Python inference'a bakmak gerekir.
+- **Takip (A1, `docs/contributions/autospeed-double-sigmoid.md`):** Çift sigmoid `auto_speed` reposunun Python
+  inference kodunda da var (`auto_speed_infer.py:69`, `video_visualization.py:69`); C++ bunu birebir taşımış. Eğitimdeki
+  doğrulama ise çıktıyı doğrudan olasılık olarak kullanıyor (`auto_speed_util.py:124`). Etki ölçümü
+  (`src/autospeed_threshold.py`): p ≥ 0,6'ya geçmek kutuları %22–25, CIPO karelerini challenge'da 109'dan 25'e
+  düşürüyor ve kaybolan CIPO'lar 40–70 m'deki gerçek araçlar. Yani düşük etkin eşik şu an işe yarıyor; öneri
+  davranışı değil anlamı düzeltmek (sigmoid'i kaldır, eşiği açıkça ~0,4 yap).
 
 Ayrıca kodda yorum ile değerin uyuşmadığı küçük yerler (hata değil, ama okuyanı yanıltıyor):
 - `auto_speed.hpp:35-36` "letterbox, pad 114" diyor; ön işlemede letterbox yok.
