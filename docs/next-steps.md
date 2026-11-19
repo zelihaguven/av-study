@@ -1,6 +1,7 @@
 # Sıradaki Adımlar
 
-**Sıra:** Önce ana TODO listesinde kalanlar (aşağıda "0", tamamlandı). Ek işler (A, B) **en son**, ana liste bitince.
+**Durum (19 Kas 2026):** Ana liste ve ek işler (A, B) tamamlandı. Açık kalan tek şey taslakların gönderilmesi ve
+Medium yazılarının yayımlanması; ikisi de kullanıcının kararı.
 
 ## 0. Ana listeden kalanlar (önce bunlar)
 
@@ -50,5 +51,4 @@ geçerli olduğunu kontrol et.
 7. [x] 04: paralel + intra_op = 1 → 164 ms (6,1 Hz); varsayılan thread ayarıyla paralel daha yavaş
 8. [x] 05: direksiyon gecikmesi ölçüldü (`05-integration/notes.md`, "Direksiyon aktüatörü"). Çıkarım kısmen yanlış;
    asıl bulgu: 0,24 s + 0,27 s ile kontrol döngüsü kararsız.
-8b. [ ] 05: gecikme telafisi (durumu gecikme kadar ileri tahmin et) veya kazanç ayarı ile Autoware aktüatöründe
-   kararlılığı geri getir
+8b. [x] 05: gecikme telafisi kararlılığı geri getiriyor (173 → 15 cm); filtre de uygulanan açıyı kullanmalı.

@@ -67,7 +67,7 @@ katmanı bunu silemiyor; aynı %30 kayıp 1 s'lik kesintiler hâlinde gelirse ar
 
 ![Gürültünün yapısı](results/noise_structure.png)
 
-Ek: Autoware'in direksiyon gecikmesi değerleriyle (0,24 s + 0,27 s) bu kontrolcü kararsızlaşıyor; takip katmanı bunu çözmüyor.
+Ek: Autoware'in direksiyon gecikmesi değerleriyle (0,24 s + 0,27 s) bu kontrolcü kararsızlaşıyor; takip katmanı bunu çözmüyor, gecikme telafisi çözüyor (173 → 15 cm).
 
 ![Aktüatör gecikmesi](results/actuator_delay.png)
 

@@ -41,3 +41,12 @@ def test_feedforward_helps_on_curve(path):
     ff = run(path, 10.0, NOISE, p_drop=0.1, use_feedforward=True, seed=2)
     no_ff = run(path, 10.0, NOISE, p_drop=0.1, use_feedforward=False, seed=2)
     assert rms(ff.cte) < rms(no_ff.cte)
+
+
+def test_delay_compensation_restores_stability(path):
+    """8b: Autoware aktüatörü (0,24 s + 0,27 s) bu kontrolcüyü kararsızlaştırıyor; gecikme telafisi geri getiriyor."""
+    quiet = LaneNoise(1e-9, 1e-9, 1e-9)
+    raw = run(path, 10.0, quiet, p_drop=0.0, steer_delay=0.24, steer_tau=0.27)
+    comp = run(path, 10.0, quiet, p_drop=0.0, steer_delay=0.24, steer_tau=0.27, compensate_delay=True)
+    assert max_abs(raw.cte) > 1.0
+    assert max_abs(comp.cte) < 0.75

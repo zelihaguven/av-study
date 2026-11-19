@@ -1,4 +1,4 @@
-"""B8: direksiyon aktüatörü gecikmesi eklenince takipsiz sistem hâlâ "yanal hatada iyi" mi?
+"""B8 + 8b: direksiyon aktüatörü gecikmesi eklenince takipsiz sistem hâlâ "yanal hatada iyi" mi?
 
 05 notları 1. soruda bir çıkarım yapıyordu: modelde direksiyon ideal olduğu için takipsiz sistem olduğundan iyi
 görünüyor; gecikme eklenince yanal hatası da bozulur. Burada ölçülüyor. Aktüatör: 0,24 s saf gecikme + 0,27 s
@@ -28,13 +28,16 @@ RESULTS = Path(__file__).resolve().parents[1] / "results"
 PATH = s_curve(50.0)
 V = 10.0
 SEEDS = range(12)
-ACTUATORS = {"ideal": (0.0, 0.0), "gecikme 0,24 s": (0.24, 0.0), "Autoware (0,24 s + τ 0,27 s)": (0.24, 0.27)}
+ACTUATORS = {"ideal": (0.0, 0.0, False), "gecikme 0,24 s": (0.24, 0.0, False),
+             "Autoware (0,24 s + τ 0,27 s)": (0.24, 0.27, False),
+             "Autoware + gecikme telafisi": (0.24, 0.27, True)}
 SCENARIOS = {"05 varsayılanı (σ 0,3 m, %10 kayıp)": (LaneNoise(), 0.1),
              "04 otoyol (σ 2,4 cm, ρ 0,6)": (LaneNoise(0.024, np.deg2rad(0.26), 0.0003, rho=0.6), 0.0)}
 
 
-def stats(noise, p_drop, tracker, delay, tau):
-    rs = [run(PATH, V, noise, p_drop=p_drop, use_tracker=tracker, seed=s, steer_delay=delay, steer_tau=tau)
+def stats(noise, p_drop, tracker, delay, tau, comp):
+    rs = [run(PATH, V, noise, p_drop=p_drop, use_tracker=tracker, seed=s, steer_delay=delay, steer_tau=tau,
+              compensate_delay=comp)
           for s in SEEDS]
     return (np.mean([rms(r.cte) for r in rs]), np.median([max_abs(r.cte) for r in rs]),
             np.mean([np.rad2deg(rms(np.diff(r.steer) / np.diff(r.t))) for r in rs]))
@@ -43,11 +46,11 @@ def stats(noise, p_drop, tracker, delay, tau):
 def main():
     table = {}
     for sc, (noise, pd) in SCENARIOS.items():
-        for act, (d, tau) in ACTUATORS.items():
+        for act, (d, tau, comp) in ACTUATORS.items():
             for tr in (True, False):
-                table[(sc, act, tr)] = stats(noise, pd, tr, d, tau)
+                table[(sc, act, tr)] = stats(noise, pd, tr, d, tau, comp)
 
-    fig, axes = plt.subplots(1, len(SCENARIOS), figsize=(12, 4.5))
+    fig, axes = plt.subplots(1, len(SCENARIOS), figsize=(14, 4.8))
     x = np.arange(len(ACTUATORS))
     for ax, sc in zip(axes, SCENARIOS):
         for off, tr, col, name in [(-0.2, True, "tab:blue", "Takipli"), (0.2, False, "tab:red", "Takipsiz")]:
@@ -56,7 +59,8 @@ def main():
             for xi, v in zip(x + off, vals):
                 ax.text(xi, v, f"{v:.1f}", ha="center", va="bottom", fontsize=8)
         ax.set_xticks(x, [a.replace(" (", "\n(") for a in ACTUATORS], fontsize=8)
-        ax.set_ylabel("RMS gerçek CTE [cm]")
+        ax.set_ylabel("RMS gerçek CTE [cm] (log)")
+        ax.set_yscale("log")
         ax.set_title(sc, fontsize=10)
         ax.grid(alpha=0.3, axis="y")
         ax.legend(fontsize=8)

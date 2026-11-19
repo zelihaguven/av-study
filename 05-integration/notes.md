@@ -104,6 +104,7 @@ Autoware'in MPC ayarları 0,24 s ve 0,27 s (`mpc.param.yaml`). Varsayılanlar id
 | 0,24 s gecikme | 31,0 / 26,2 cm | 11,2 / 10,2 cm | 9,5 cm |
 | 0,27 s zaman sabiti | | | 6,4 cm |
 | 0,24 s + 0,27 s (Autoware) | 63 / 187 cm | 186 / 172 cm | **173 cm, direksiyon %43 sınırda** |
+| Autoware + gecikme telafisi (8b) | 24,9 / 22,3 cm | 15,5 / 15,2 cm | 14,9 cm |
 
 - **Çıkarımım kısmen yanlış.** Saf gecikmede iki sistem de 2–5 kat kötüleşiyor ve takipsiz sistem yanal hatada yine
   biraz önde. Takip katmanı gecikmeye karşı koruma sağlamıyor.
@@ -113,10 +114,17 @@ Autoware'in MPC ayarları 0,24 s ve 0,27 s (`mpc.param.yaml`). Varsayılanlar id
   dayanmıyor. Gecikme 0,12 s'ye inince kararlı (10 cm).
 - Kararsız durumda takipli/takipsiz farkı (63 / 187 cm) anlamlı bir karşılaştırma değil; sınır çevriminin
   genliği gürültüye bağlı ve düzensiz.
-- Sonuç: gerçek bir araçta önce kontrolcünün aktüatör gecikmesini hesaba katması gerekiyor (gecikme telafisi,
-  düşük kazanç ya da aktüatör modelli MPC). Autoware'in MPC'si `input_delay` parametresini tam bunun için
-  taşıyor; VisionPilot'un uzamsal MPC'si de aynı soruyu cevaplamak zorunda. Gecikme telafisi bu repoda denenmedi
-  (`docs/next-steps.md`, 8b).
+- **Gecikme telafisi (8b) kararlılığı geri getiriyor.** `run(..., compensate_delay=True)`: kontrolcü tahmini durumu
+  kuyruktaki komutlar ve aktüatör modeliyle gecikme kadar ileri taşıyıp komutu o andaki duruma göre hesaplıyor
+  (Smith öngörücüsü fikri). Gürültüsüz 173 → 15 cm, gerçekçi otoyol 172–186 → 15 cm, direksiyon hiç sınıra
+  dayanmıyor. `tests/test_integration.py::test_delay_compensation_restores_stability` bunu sabitliyor.
+- **Takip katmanı da aktüatörü bilmeli.** İlk denemede telafiye rağmen takipli sistem 63 cm'de kaldı: filtre tahmin
+  adımında komut verilen açıyı kullanıyordu, oysa araca o açı 0,24 s sonra ve yavaşça geçiyor. Filtreye tekerleğe
+  geçen açıyı verince 25 cm'ye indi. Gecikmeli bir sistemde kontrolcü ile kestiricinin aynı aktüatör modelini
+  paylaşması gerekiyor.
+- Telafiyle bile ideal aktüatöre göre hata 6 kat (2,4 → 15 cm): telafi yalnız aktüatörün bilinen kısmını geri alıyor.
+  Autoware'in MPC'si `input_delay` ve `vehicle_model_steer_tau`'yu bu yüzden modelinde taşıyor; VisionPilot'un
+  uzamsal MPC'si de aynı soruyu cevaplamak zorunda.
 
 ## 04 ölçümleriyle karşılaştırma
 

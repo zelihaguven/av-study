@@ -14,6 +14,17 @@ from perception_sim import NoiseMemory, measure_lane
 TRACKER_Q: tuple[float, float, float] = (0.01, 1e-4, 1e-3)
 
 
+def _predict_through_actuator(x, queue, applied, lag, v, L, dt):
+    """[e_y, e_psi, kappa]'yı kuyruktaki komutlar tekerleğe geçene kadar ileri taşır (küçük açı kinematiği)."""
+    e_y, e_psi, kappa = x
+    a = applied
+    for cmd in queue:
+        a += lag * (cmd - a)
+        e_y += v * e_psi * dt
+        e_psi += (v / L * np.tan(a) - v * kappa) * dt
+    return np.array([e_y, e_psi, kappa])
+
+
 @dataclass
 class IntegrationResult:
     t: np.ndarray
@@ -29,7 +40,7 @@ def run(path, v: float, noise, p_drop: float, use_tracker: bool = True,
         dt: float = 0.05, params: VehicleParams = VehicleParams(),
         tracker_q: tuple[float, float, float] = TRACKER_Q,
         steer_delay: float = 0.0, steer_tau: float = 0.0,
-        tracker_rho: float = 0.0) -> IntegrationResult:
+        tracker_rho: float = 0.0, compensate_delay: bool = False) -> IntegrationResult:
     """dt = kamera periyodu (20 Hz). Araç modeli 01'deki step ile ilerletilir.
 
     use_tracker=False: ölçüm doğrudan kontrolcüye gider; ölçüm yoksa son ölçüm tutulur.
@@ -39,6 +50,10 @@ def run(path, v: float, noise, p_drop: float, use_tracker: bool = True,
     `steer_tau` zaman sabitli birinci derece gecikmeyle tekerleğe geçer. Autoware'in MPC ayarları
     0,24 s ve 0,27 s kullanıyor (mpc.param.yaml; 00 notları). `steer` kaydı komutu, araç uygulananı görür.
     Takip katmanı tahminde komutu kullanır (gerçek açıyı bilmez).
+
+    compensate_delay=True (8b, Smith öngörücüsü fikri): kontrolcü, tahmini durumu kuyruktaki komutlar ve aktüatör
+    modeliyle gecikme kadar ileri taşır ve komutu o andaki duruma göre hesaplar. Aktüatör parametrelerinin bilindiği
+    varsayılır.
     """
     rng = np.random.default_rng(seed)
     memory = NoiseMemory()        # ilişkili gürültü / kümeli kayıp için (LaneNoise.rho, burst_len)
@@ -57,13 +72,18 @@ def run(path, v: float, noise, p_drop: float, use_tracker: bool = True,
     for k in range(n_max + 1):
         z = measure_lane(state, path, rng, noise, p_drop, memory)
         if use_tracker:
-            est = tracker.step(z, v, delta, dt)
+            # Telafi açıkken aktüatör modeli bilindiği için filtre, komutu değil tekerleğe geçen açıyı kullanır;
+            # yoksa gecikmeli bir sistemde tahmin adımı direksiyonun etkisini 0,24 s erken bekler.
+            est = tracker.step(z, v, applied if compensate_delay else delta, dt)
         else:
             if z is not None:
                 held = z
             est = held
+        ctrl_in = np.array(est, dtype=float)
+        if compensate_delay and n_delay > 0:
+            ctrl_in = _predict_through_actuator(ctrl_in, cmd_queue, applied, lag, v, params.wheelbase, dt)
         delta = float(np.clip(
-            lane_keep_steer(est[0], est[1], est[2], v, params.wheelbase, use_feedforward=use_feedforward),
+            lane_keep_steer(ctrl_in[0], ctrl_in[1], ctrl_in[2], v, params.wheelbase, use_feedforward=use_feedforward),
             -params.max_steer, params.max_steer))
 
         ts.append(k * dt)
