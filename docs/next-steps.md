@@ -1,18 +1,18 @@
 # Sıradaki Adımlar
 
-**Sıra:** Önce ana TODO listesinde kalanlar (aşağıda "0"). Ek işler (A, B) **en son**, ana liste bitince.
+**Sıra:** Önce ana TODO listesinde kalanlar (aşağıda "0", tamamlandı). Ek işler (A, B) **en son**, ana liste bitince.
 
 ## 0. Ana listeden kalanlar (önce bunlar)
 
-Ana TODO'nun 35 maddesinden 32'si bitti, okuma günlüğü çıkarıldı. Kalan:
+Ana TODO'nun 35 maddesinin 34'ü bitti, okuma günlüğü çıkarıldı:
 
 - [x] `docs/glossary.md` tanımları
-- [ ] Medium yazıları (`docs/writing-plan.md`): 5 taslak, `docs/medium/` altında
-  - [ ] #1 Mimari (00)
-  - [ ] #2 Bisiklet modeli (01)
-  - [ ] #3 Pure Pursuit vs Stanley (02)
-  - [ ] #4 Kalman (03)
-  - [ ] #5 Tek kameradan direksiyona (04 + 05)
+- [x] Medium yazıları (`docs/writing-plan.md`): 5 taslak, `docs/medium/` altında (yayımlama senin kararın)
+  - [x] #1 Mimari (00)
+  - [x] #2 Bisiklet modeli (01)
+  - [x] #3 Pure Pursuit vs Stanley (02)
+  - [x] #4 Kalman (03)
+  - [x] #5 Tek kameradan direksiyona (04 + 05)
 
 ---
 
