@@ -1,0 +1,4 @@
+# 04-perception için ek bağımlılıklar (kök requirements.txt'ye ek olarak).
+# Testler bunlar olmadan da çalışır; sadece modelleri ve videoları çalıştırmak için gerekli.
+onnxruntime==1.20.1
+opencv-python-headless==4.10.0.84
