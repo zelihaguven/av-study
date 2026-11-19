@@ -31,6 +31,7 @@ Modül sonunda şunları açıklayabilmelisin:
 | `src/perception_sim.py` | `measure_lane(state, path, rng, noise, p_drop)` → `z` veya `None` |
 | `src/lane_keeping.py` | `LaneTracker` (03'ün `KalmanFilter`'ını kullanır, 3 durumlu model senin), `lane_keep_steer(...)` |
 | `src/plots.py` | 3 grafik + sayısal özet: `python 05-integration/src/plots.py` (repo kökünden) |
+| `src/noise_structure.py` | Ek: ilişkili gürültü (AR(1)) ve kümeli kayıp deneyleri → `results/noise_structure.png` |
 | `src/loop.py` | `run(path, v, noise, p_drop, use_tracker, seed)` → zaman, durumlar, direksiyon, gerçek CTE |
 
 ## Görevler
@@ -60,7 +61,12 @@ takipsiz 4,6 m. Feedforward virajdaki 58 cm'lik kalıcı sapmayı 3,5 cm'e indir
 
 ![Feedforward açık/kapalı](results/ff_ablation.png)
 
-Yorumlar, 3 sorunun cevabı ve VisionPilot'tan 8 fark: [`notes.md`](notes.md).
+Ek: gürültünün yapısı. Aynı σ ile 04'te ölçülen korelasyon (ρ ≈ 0,6) yanal hatayı ~2 katına çıkarıyor ve takip
+katmanı bunu silemiyor; aynı %30 kayıp 1 s'lik kesintiler hâlinde gelirse araç şeritten çıkıyor.
+
+![Gürültünün yapısı](results/noise_structure.png)
+
+Yorumlar, 3 sorunun cevabı, 04 ölçümleriyle karşılaştırma ve VisionPilot'tan 8 fark: [`notes.md`](notes.md).
 
 ## Kabul kriteri
 

@@ -108,8 +108,70 @@ tahmini"). Aynı S-virajında 10 koşu ortalaması:
 
 Varsayılanlar otoyol titreşimine göre ~10 kat kötümser; değiştirmedim, çünkü 04'ün yöntemi yavaş ve sistematik
 hataları göremiyor ve testler bu stres senaryosuna göre yazılmış. 1. sorudaki sonuç her gürültü seviyesinde
-geçerli: takip katmanı yanal hatayı değil direksiyonu iyileştiriyor. Gerçek gürültü ilişkili (ρ₁ ≈ 0,7) ve bunu
-burada modellemedim; sıradaki adım AR(1) gürültü olur.
+geçerli: takip katmanı yanal hatayı değil direksiyonu iyileştiriyor. Gerçek gürültü ilişkili (ρ₁ ≈ 0,7); bunun
+etkisi bir sonraki bölümde.
+
+## Gürültünün yapısı: ilişkili gürültü ve kümeli kayıp
+
+04'te ölçülen iki özelliği sentetik algıya ekledim (`LaneNoise.rho`, `LaneNoise.burst_len`; varsayılanlar eski
+davranışı birebir koruyor, 05'in testleri ve grafikleri değişmedi):
+
+- **AR(1) gürültü:** `n_k = ρ n_{k−1} + √(1−ρ²) w_k`. σ aynı kalıyor, sadece hatanın ne kadar "kalıcı" olduğu değişiyor.
+  04'teki ρ₁ = 0,66 (25 fps) 20 Hz'e çevrilince ≈ 0,6.
+- **Kümeli kayıp:** iki durumlu Markov zinciri (Gilbert modeli). Ortalama kesinti L kare, uzun dönem kayıp oranı
+  p_drop ile aynı tutuluyor; böylece aynı kayıp oranında bağımsız ve kümeli kayıp karşılaştırılabiliyor.
+- `tests/test_noise_models.py` üçünü de doğruluyor: varsayılanlar eskiyle aynı, AR(1) σ'yı ve ρ₁'i, Markov
+  kaybı oranı ve ortalama kesinti uzunluğunu tutturuyor.
+
+`noise_structure.png`, `python 05-integration/src/noise_structure.py`, 12 koşu:
+
+**1. Aynı σ ile korelasyon arttıkça (σ_y = 0,3 m, %10 bağımsız kayıp):**
+
+| ρ | Takipli gerçek CTE | Takipli gördüğü hata | Takipli dir. hızı | Takipsiz gerçek CTE | Takipsiz dir. hızı |
+|---|---|---|---|---|---|
+| 0 | 13,5 cm | 8,6 cm | 19,6 °/s | 11,5 cm | 126 °/s |
+| 0,6 | 25,2 cm | 15,0 cm | 15,3 °/s | 21,3 cm | 82 °/s |
+| 0,9 | 50,5 cm | 25,5 cm | 10,7 °/s | 42,6 cm | 42 °/s |
+| 0,95 | 64,5 cm | 29,9 cm | 9,2 °/s | 54,6 cm | 30 °/s |
+
+- **Aynı σ, çok farklı sonuç.** 04'te ölçülen ρ ≈ 0,6'da yanal hata bağımsız gürültüye göre ~2 kat. σ tek başına
+  bir algı modelinin ne kadar iyi olduğunu söylemiyor; hatanın ne kadar sürdüğü de önemli.
+- **Filtre ilişkili gürültüyü silemiyor.** Kalman ardışık ölçümlerin ortalamasını alarak gürültüyü azaltır. Bu ancak
+  hatalar bağımsızsa işe yarar. ρ = 0,95'te filtrenin çıktısındaki hata (29,9 cm) ham ölçümünkiyle (30 cm) aynı.
+  Ardışık 20 kare aynı yönde yanlışsa ortalamaları da yanlış.
+- **Araç da silemiyor.** 1. sorudaki "araç alçak geçiren filtredir" etkisi tersine dönüyor. Yavaş değişen hata
+  aracın filtreleyebildiği frekansın altına iniyor ve doğrudan yola yansıyor.
+- **Takipsiz sistemin direksiyonu yumuşuyor** (126 → 30 °/s), çünkü ölçüm artık yavaş değişiyor. Takip katmanının
+  direksiyondaki avantajı 6,4 kattan 3,3 kata düşüyor.
+- Doğru çözüm, filtreye ilişkili gürültüyü bildirmek: gürültüyü ayrı bir durum olarak ekleyip (shaping filter /
+  durum genişletme) filtreye "bu hata kalıcı" demek. Burada yapmadım; `docs/next-steps.md`'ye eklenebilir.
+
+**2. Aynı kayıp oranı (%30), farklı kümelenme:**
+
+| Ortalama kesinti | Takipli maks CTE medyan / en kötü | Takipsiz medyan / en kötü |
+|---|---|---|
+| bağımsız (~1,4 kare) | 0,34 / 0,42 m | 0,36 / 0,63 m |
+| 5 kare (0,25 s) | 0,52 / 1,05 m | 1,03 / 2,33 m |
+| 10 kare (0,5 s) | 1,05 / 7,1 m | 2,85 / 5,8 m |
+| 20 kare (1 s) | 2,81 / 53 m | 12,1 / 36 m |
+
+- **Kayıp oranı yanıltıcı bir ölçüt.** %30 bağımsız kayıpta sistem rahat, aynı %30 1 s'lik kesintiler hâlinde
+  gelirse araç şeritten çıkıyor. 3. sorudaki "en uzun kesinti belirler" sonucunun doğrudan deneyi bu.
+- Takip katmanı kümeli kayıpta da en değerli (5–10 kare kesintide medyan hata yarı yarıya), ama 1 s'lik
+  kesintilerde o da dağılıyor. En kötü koşuda 53 m: araç yolu tamamen kaybetmiş. Bir L2 sistemi burada çoktan
+  sürücüye devretmiş olmalı (00, 6. soru).
+
+**3. 04'ün ölçtüğü gerçekçi senaryolar** (σ'lar MAD tabanlı):
+
+| Senaryo | Takipli RMS / maks / dir. hızı | Takipsiz RMS / maks / dir. hızı |
+|---|---|---|
+| Otoyol, bağımsız gürültü | 1,7 / 5,3 cm / 9,3 °/s | 1,4 / 4,2 cm / 14,7 °/s |
+| Otoyol, ρ = 0,6 | 2,4 / 6,4 cm / 8,9 °/s | 2,1 / 5,2 cm / 11,8 °/s |
+| Zor yol, ρ = 0,6, 3 karelik kesintiler | 8,5 / 20,1 cm / 11,9 °/s | 7,5 / 18,2 cm / 27,8 °/s |
+
+Gerçekçi gürültüde takip katmanının direksiyon avantajı küçülüyor (otoyolda 1,3 kat) ve yanal hataya katkısı
+yok. Bu senaryolarda sistemi zorlayan şey titreşim değil, 04'teki başarısızlık kareleri gibi saniyeler süren
+sistematik hatalar. Onları bu Gaussian modellerden hiçbiri temsil etmiyor.
 
 ## VisionPilot ile farklar (dürüstlük bölümü)
 
@@ -120,9 +182,9 @@ noktalarda gerçek sistemden ayrılıyor:
    64 noktasını ve güvenlerini, AutoDrive eğriliği veriyor. Yanal füzyon bu noktalara RANSAC ile polinom
    uydurup hataları kendisi çıkarıyor. Aradaki adım (piksel → metre için homografi, polinom uydurma)
    burada yok.
-2. **Gürültü gerçekçi değil.** Burada gürültü bağımsız, Gaussian ve kareden kareye ilişkisiz. 04'te ölçülen
-   AutoSteer hataları ilişkili (ρ₁ ≈ 0,7), aykırı değerler içeriyor (zor yolda %10) ve sahneye bağlı (parlama,
-   firkete; `04-perception/results/failures/`). Kayıplar da kümeli. 3. sorudaki analiz bu yüzden iyimser.
+2. **Gürültü gerçekçi değil.** Varsayılan gürültü bağımsız ve Gaussian. İlişkili gürültü ve kümeli kayıp artık
+   seçenek olarak var (yukarıdaki bölüm), ama 04'te görülen aykırı değerler (zor yolda %10) ve sahneye bağlı
+   sistematik hatalar (parlama, firkete; `04-perception/results/failures/`) hâlâ modellenmiyor.
 3. **Takip filtresi farklı.** Burada tek bir lineer Kalman var. VisionPilot CTE/yaw ve eğrilik için ayrı
    parçacık filtreleri kullanıyor ve eğriliği iki kaynaktan (AutoSteer yolu + AutoDrive) birleştiriyor.
 4. **Kontrolcü ileriyi görmüyor.** Burada Stanley + feedforward, κ'yı arka aksta okuyor. VisionPilot'ta

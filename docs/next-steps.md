@@ -1,0 +1,43 @@
+# Sıradaki Adımlar
+
+Bütün modüller ✅ olduktan sonra yapılacak ek işler. Öncelik sırasıyla. Her madde en fazla birkaç saatlik.
+
+## A. VisionPilot'a katkı adayları
+
+Hepsi 04'te `65375ec2cf` sürümünde bulundu (`04-perception/notes.md`). Issue açmadan önce `main`'de hâlâ
+geçerli olduğunu kontrol et.
+
+1. **AutoSpeed çift sigmoid (en güçlü aday).** ONNX çıktısı zaten olasılık (`Concat(kutu, Sigmoid(sınıf))`),
+   `modules/models/src/auto_speed.cpp:139` ikinci kez sigmoid uyguluyor; `conf_thres = 0.6` aslında 0,405.
+   - [ ] `autowarefoundation/auto_speed` reposunda eğitim/inference Python kodunun çıktıya sigmoid uygulayıp
+     uygulamadığına bak (export'taki sigmoid bilinçli mi?)
+   - [ ] Etkiyi ölç: aynı videoda iki eşik davranışıyla (C++ birebir / düzeltilmiş) CIPO kare sayısı ve yanlış alarm
+   - [ ] Issue taslağı: belirti, kanıt (ONNX grafiği + satır), etki, iki çözüm seçeneği. Taslak burada, kullanıcı onayı
+     olmadan GitHub'a gönderilmez.
+2. **Kontrol periyodu tutarsızlığı.** `modules/safety_guardian/planning/include/planning/config.hpp`: yorum "50Hz",
+   değer `dt = 0.05` (20 Hz). Füzyon ise `dt = 0.10` (10 Hz) varsayıyor ve `update()` dt'siz çağrılıyor
+   (`inference.cpp:207`).
+   - [ ] Hangi hızın amaçlandığını PoV WG tartışmalarından veya commit geçmişinden bul; issue veya küçük PR taslağı
+3. **Bayat yorumlar (küçük "good first PR").** `auto_speed.hpp:35-36` (letterbox yok), `image_preprocessor.hpp:14`
+   ("BEV" değil), `lateral_fusion.hpp:34-35,55` (CTE x = 0'da değil `x_ref`'te), `lateral_fusion.hpp:93,99`
+   (0,25 → 0,20, 15 → 12).
+   - [ ] Tek bir dokümantasyon PR'ı taslağı
+4. **Keskin virajda son işleme.** `y = a x² + b x + c` yana dönen yolu temsil edemiyor (04, başarısızlık 4).
+   - [ ] Alternatifi dene: yay uzunluğuna göre parametrik uydurma veya `x(y)` + `y(x)` arasında seçim; harder_challenge
+     firkete bölümünde (39–44 s) karşılaştır
+   - [ ] Sonuç iyiyse issue olarak öner (önce tartışma, sonra PR)
+
+## B. Bu repoda derinleştirme
+
+5. [x] 05: ilişkili (AR(1)) gürültü ve kümeli kayıp (`05-integration/notes.md`, "Gürültünün yapısı")
+5b. [ ] 05: takip katmanına ilişkili gürültüyü bildir (gürültüyü durum olarak ekle / shaping filter) ve ρ = 0,6'da
+   yanal hatanın düşüp düşmediğini ölç
+6. [ ] 04: INT8'in bu CPU'da neden yavaş olduğunu doğrula (`lscpu` bayrakları, onnxruntime profili)
+7. [ ] 04: modelleri `std::async` gibi paralel çalıştırınca kare süresi (ThreadPool ile)
+8. [ ] 02/05: direksiyon gecikmesi (0,24 s) ve hız sınırı ekleyip takipsiz sistemin yanal hatasını yeniden ölç
+   (05 notlarında "ölçmedim, çıkarım" olarak geçen iddia)
+
+## C. Öğrenme ürünleri
+
+9. [ ] `docs/glossary.md` tanımları
+10. [ ] Medium yazıları (`docs/writing-plan.md`): 5 yazının hepsi için modül ✅ oldu

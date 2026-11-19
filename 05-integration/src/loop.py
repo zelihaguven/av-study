@@ -8,7 +8,7 @@ import numpy as np
 from bicycle import VehicleParams, step
 from lane_keeping import LaneTracker, lane_keep_steer
 from paths import cross_track_error, nearest_index
-from perception_sim import measure_lane
+from perception_sim import NoiseMemory, measure_lane
 
 # Takip katmanının süreç gürültüsü (q_y, q_psi, q_kappa). Gerekçe: notes.md
 TRACKER_Q: tuple[float, float, float] = (0.01, 1e-4, 1e-3)
@@ -34,6 +34,7 @@ def run(path, v: float, noise, p_drop: float, use_tracker: bool = True,
     Hız sabit kabul edilebilir (boylamsal kontrol bu modülün konusu değil).
     """
     rng = np.random.default_rng(seed)
+    memory = NoiseMemory()        # ilişkili gürültü / kümeli kayıp için (LaneNoise.rho, burst_len)
     state = np.array([path.x[0], path.y[0], path.yaw[0], v])
     tracker = LaneTracker(params.wheelbase, noise, tracker_q)
     held = np.zeros(3)            # tracker'sız modda son geçerli ölçüm
@@ -43,7 +44,7 @@ def run(path, v: float, noise, p_drop: float, use_tracker: bool = True,
 
     ts, states, steers, ctes, zs, ests = [], [], [], [], [], []
     for k in range(n_max + 1):
-        z = measure_lane(state, path, rng, noise, p_drop)
+        z = measure_lane(state, path, rng, noise, p_drop, memory)
         if use_tracker:
             est = tracker.step(z, v, delta, dt)
         else:
