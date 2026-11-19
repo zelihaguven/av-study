@@ -32,7 +32,7 @@ Referans noktası: **arka aks merkezi** (Pure Pursuit bu tanımı kullanır).
 - [x] RK4 ekle
 - [x] `results/circle.png`: sabit direksiyonla çember, teorik çember üst üste
 - [x] `results/dt_error.png`: `dt` ∈ {0.001, 0.01, 0.05, 0.1} için Euler ve RK4 çember yarıçap hatası (log ölçek)
-- [ ] `notes.md`: modelin geçersiz olduğu durumlar, kendi cümlelerinle
+- [x] `notes.md`: modelin geçersiz olduğu durumlar
 
 ## Sonuçlar
 
@@ -62,7 +62,7 @@ Bir tam turda bağıl yarıçap hatası `max|r − R| / R` (δ = 10°, v = 5 m/s
 
 - [x] `pytest 01-vehicle-model` tamamen yeşil
 - [x] `circle.png` ve `dt_error.png` üretilmiş ve bu README'den link verilmiş
-- [ ] `notes.md`'de "model ne zaman yanlış söyler" sorusuna en az 3 maddelik cevap var
+- [x] `notes.md`'de "model ne zaman yanlış söyler" sorusuna en az 3 maddelik cevap var
 
 ## Yazı
 

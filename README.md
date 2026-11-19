@@ -19,7 +19,7 @@ tek kameralı L2 ADAS sistemi **VisionPilot** (Autoware Privately Owned Vehicle 
 | Modül | Konu | Ne öğreniliyor | Durum |
 |---|---|---|---|
 | [`00-architecture`](00-architecture/) | Mimari | Modüler stack, VisionPilot veri akışı, modül arayüzleri | ✅ |
-| [`01-vehicle-model`](01-vehicle-model/) | Kinematik bisiklet modeli | Diğer modüllerin test edileceği simülatör | 🟨 |
+| [`01-vehicle-model`](01-vehicle-model/) | Kinematik bisiklet modeli | Diğer modüllerin test edileceği simülatör | ✅ |
 | [`02-control`](02-control/) | Yanal/boylamsal kontrol | PID, Pure Pursuit, Stanley karşılaştırması | 🟨 |
 | [`03-tracking`](03-tracking/) | Durum kestirimi | Kalman filtresi: şerit ve öndeki araç (CIPO) | 🟨 |
 | [`04-perception`](04-perception/) | Öğrenilmiş algı | EgoLanes / AutoSteer çıktılarını okuma ve yorumlama | 🟨 |
