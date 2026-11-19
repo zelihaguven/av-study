@@ -22,7 +22,7 @@ class VehicleParams:
 
 def wrap_angle(angle: float) -> float:
     """Açıyı [-pi, pi] aralığına sarar."""
-    raise NotImplementedError
+    return float((angle + np.pi) % (2 * np.pi) - np.pi)
 
 
 def derivatives(state: np.ndarray, accel: float, steer: float,
@@ -31,7 +31,13 @@ def derivatives(state: np.ndarray, accel: float, steer: float,
 
     İpucu: yaw_dot = v / L * tan(steer)
     """
-    raise NotImplementedError
+    _, _, yaw, v = state
+    return np.array([
+        v * np.cos(yaw),
+        v * np.sin(yaw),
+        v / params.wheelbase * np.tan(steer),
+        accel,
+    ])
 
 
 def step(state: np.ndarray, accel: float, steer: float, dt: float,
@@ -42,11 +48,37 @@ def step(state: np.ndarray, accel: float, steer: float, dt: float,
     - Sonuçtaki yaw wrap_angle ile sarılır.
     - method: "euler" veya "rk4"; başka değer ValueError.
     """
-    raise NotImplementedError
+    if method not in ("euler", "rk4"):
+        raise ValueError(f"bilinmeyen entegrasyon yöntemi: {method!r}")
+    state = np.asarray(state, dtype=float)
+    steer = float(np.clip(steer, -params.max_steer, params.max_steer))
+    accel = float(np.clip(accel, -params.max_accel, params.max_accel))
+
+    def f(s):
+        return derivatives(s, accel, steer, params)
+
+    if method == "euler":
+        new = state + dt * f(state)
+    else:
+        k1 = f(state)
+        k2 = f(state + dt / 2 * k1)
+        k3 = f(state + dt / 2 * k2)
+        k4 = f(state + dt * k3)
+        new = state + dt / 6 * (k1 + 2 * k2 + 2 * k3 + k4)
+    new[2] = wrap_angle(new[2])
+    return new
 
 
 def simulate(state0: np.ndarray, accels: np.ndarray, steers: np.ndarray,
              dt: float, params: VehicleParams,
              method: str = "rk4") -> np.ndarray:
     """N adımlık kontrol dizisiyle simülasyon. (N+1, 4) dizi döner, ilk satır state0."""
-    raise NotImplementedError
+    accels = np.asarray(accels, dtype=float)
+    steers = np.asarray(steers, dtype=float)
+    if accels.shape != steers.shape:
+        raise ValueError("accels ve steers aynı uzunlukta olmalı")
+    traj = np.empty((len(accels) + 1, 4))
+    traj[0] = state0
+    for k in range(len(accels)):
+        traj[k + 1] = step(traj[k], accels[k], steers[k], dt, params, method)
+    return traj

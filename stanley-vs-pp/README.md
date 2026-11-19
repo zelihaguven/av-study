@@ -15,7 +15,11 @@ bir yolu izliyor.
 | `simulasyon.py` | Deney 1: Pure Pursuit'te ileri bakış mesafesi | |
 | `stanley_vs_pp.py` | Deney 2: Stanley ile Pure Pursuit aynı virajda | |
 
-## Çalıştırma (Mac)
+## Çalıştırma
+
+Bu klasörün içinden. Bağımlılık sadece numpy ve matplotlib (kökteki `requirements.txt` da yeter).
+
+Linux / macOS:
 
 ```bash
 python3 -m venv .venv && source .venv/bin/activate
@@ -23,6 +27,19 @@ pip install numpy matplotlib
 python simulasyon.py
 python stanley_vs_pp.py
 ```
+
+Windows (PowerShell):
+
+```powershell
+python -m venv .venv
+.venv\Scripts\Activate.ps1
+pip install numpy matplotlib
+python simulasyon.py
+python stanley_vs_pp.py
+```
+
+Ekranı olmayan bir makinede (sunucu, CI) grafik penceresi açılamazsa `MPLBACKEND=Agg` ile çalıştır;
+PNG dosyaları yine kaydedilir.
 
 ## Deneyebileceklerin
 
