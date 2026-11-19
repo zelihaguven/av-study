@@ -28,21 +28,36 @@ Modül sonunda şunları açıklayabilmelisin:
 | `cv_model(dt, q)` | CIPO için `F`, `Q` (sürekli beyaz ivme gürültüsü modeli) |
 | `lane_model(dt, v, q_y, q_psi)` | Şerit için `F`, `Q`; `ė_y = v·e_ψ` |
 | `nees(x_true, x_est, P)` | Normalize kestirim hata karesi |
+| `src/plots.py` | 3 grafik + sayısal özet: `python 03-tracking/src/plots.py` (repo kökünden) |
 
 ## Görevler
 
-- [ ] `KalmanFilter` + `cv_model` → CIPO testleri
-- [ ] `lane_model` → şerit testi
-- [ ] `nees` → tutarlılık testi (Monte Carlo)
-- [ ] `results/cipo.png`: gerçek / ham ölçüm / filtre + ±2σ bandı, ölçüm kesintisi işaretli
-- [ ] `results/q_r_sweep.png`: `q` ∈ 4 değer için filtre çıktısı, aynı veriye
-- [ ] `notes.md`: yukarıdaki 3 soruya grafiklere dayanan cevaplar
+- [x] `KalmanFilter` + `cv_model` → CIPO testleri
+- [x] `lane_model` → şerit testi
+- [x] `nees` → tutarlılık testi (Monte Carlo)
+- [x] `results/cipo.png`: gerçek / ham ölçüm / filtre + ±2σ bandı, ölçüm kesintisi işaretli
+- [x] `results/q_r_sweep.png`: `q` ∈ 4 değer için filtre çıktısı, aynı veriye
+- [x] `notes.md`: yukarıdaki 3 soruya grafiklere dayanan cevaplar
+
+## Sonuçlar
+
+CIPO takibi, q = gerçek: ham ölçüm hatası 0,94 m → filtre 0,42 m. Göreli hız hiç ölçülmediği hâlde
+0,77 m/s hatayla kestiriliyor. 2 s ölçüm kesintisinde σ_d 0,34 → 1,89 m'ye büyüyor, gerçek hata (1,74 m)
+bandın içinde kalıyor.
+
+![CIPO takibi](results/cipo.png)
+
+![q taraması](results/q_r_sweep.png)
+
+Ek (tutarlılık sorusu için): ![NEES ve yanlış q](results/nees.png)
+
+Yorumlar ve 3 sorunun cevabı: [`notes.md`](notes.md).
 
 ## Kabul kriteri
 
-- [ ] `pytest 03-tracking` tamamen yeşil
-- [ ] 2 grafik üretilmiş, README'den link verilmiş
-- [ ] `notes.md`'de NEES testinin neden bir **aralık** kontrolü olduğu açıklanmış
+- [x] `pytest 03-tracking` tamamen yeşil
+- [x] 2 grafik üretilmiş, README'den link verilmiş
+- [x] `notes.md`'de NEES testinin neden bir **aralık** kontrolü olduğu açıklanmış
 
 ## Yazı
 
