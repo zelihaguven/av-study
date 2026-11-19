@@ -126,11 +126,12 @@ noktaları, yeşil eğri RANSAC polinomu.
 | 816 | `failures/1_parlama.png` | Sadece 13 nokta, eğri kısa ve kıvrık (R = 8 m) | Güneş doğrudan kameraya vuruyor, ön camdaki pus ve aşırı pozlama yol dokusunu siliyor; model ancak kaputun hemen önünü görüyor. |
 | 1040 | `failures/2_serit_yok.png` | "Şerit yok": 1 geçerli nokta | Yol yüzeyi güneşte beyaza doymuş ve firkete viraj yolu kadrajın dışına taşıyor; ikisi bir araya gelince modelin hiçbir satırda güveni kalmıyor. |
 | 994 | `failures/3_firkete_yaw.png` | e_ψ = +44° | 15 mph'lik firkete: yol görüntüde neredeyse yatay gidiyor. Ölçüm doğru olabilir ama kinematik model ve 05'teki küçük açı varsayımı bu açıda geçersiz. |
-| 998 | `failures/4_polinom_modeli.png` | e_ψ = −20°, R = −2 m, eğri S çiziyor | `y = a x² + b x + c` modeli, x'e göre yana dönen (neredeyse x sabitken y değişen) bir yolu temsil edemiyor; RANSAC 16 noktadan 13'üne anlamsız bir parabol uyduruyor. Model değil, son işleme hatası. |
+| 998 | `failures/4_polinom_modeli.png` | e_ψ = −20°, R = −2 m, eğri S çiziyor | `y = a x² + b x + c` modeli, x'e göre yana dönen (neredeyse x sabitken y değişen) bir yolu temsil edemiyor; RANSAC 16 noktadan 13'üne anlamsız bir parabol uyduruyor. İlk tahminim "model değil son işleme hatası" idi; A4'te yanlış çıktı: AutoSteer'in kendi noktaları kaputun önünde kanca çiziyor, parametrik uydurma da aynı kancayı izliyor (`sharp_curve_fit.png`). Model hatası. |
 | 1017 | `failures/5_yakin_nokta_sicramasi.png` | e_y = +1,10 m (1 s önce ~0) | Sadece 5–8 m'deki yakın noktalar görülüyor ve hepsi viraja doğru sağa kayık; CTE en yakın noktada (`x_ref`) ölçüldüğü için virajın eğimi yanal hata gibi görünüyor. |
 
-Ortak tema: Model kendisi çoğu karede makul bir yol çiziyor. Bozulmanın yarısı **son işlemede**: 2. derece
-polinom ve x_ref'te ölçüm keskin virajda çöküyor. Diğer yarısı görüntü kalitesi (parlama, doygunluk).
+Ortak tema: Firketede bozulan şey **modelin yakın mesafe noktaları**: kaputun hemen önünde kanca çiziyorlar ve
+CTE/yön tam bu en yakın noktada ölçülüyor. İlk yorumum bozulmanın yarısının 2. derece polinomdan geldiğiydi; A4'te
+parametrik kübik uydurmayla denedim, iyileşmedi (aşağıda). Diğer başarısızlıklar görüntü kalitesi (parlama, doygunluk).
 Hiçbiri 05'teki "bağımsız Gaussian gürültü" modeline uymuyor: hatalar birkaç saniye süren, birbirini izleyen
 karelerde aynı yöne kayık sistematik hatalar.
 
@@ -140,6 +141,26 @@ asfalt rengi değişiyor, yol yine doğru), `overlay_3_orman_viraji.png` (harder
 **AutoSpeed hakkında:** Videolardaki araçların çoğu sınıf 3 olarak etiketleniyor ve VisionPilot sınıf 3'ü yok
 sayıyor (sadece 1 = aynı şerit, 2 = komşu şerit). project_video'da 1260 karenin 10'unda, challenge'da 484'ün 109'unda
 bir CIPO bulundu. Sınıf 0 ve 3'ün anlamı kodda tanımlı değil; sınıf 3 büyük ihtimalle "ilgisiz araç".
+
+## A4: keskin virajda parametrik uydurma (negatif sonuç)
+
+Hipotez: `y = a x² + b x + c` keskin virajda yetersiz; yay uzunluğuna göre parametrik kübik `x(s), y(s)` daha iyi olur.
+`src/sharp_curve_fit.py`, aynı AutoSteer çıktısına iki son işleme (`postprocess_autosteer_parametric`):
+
+| | Geçerli | Anlamsız kare (\|e_ψ\| > 30° veya R < 5 m) | σ e_y | σ e_ψ | Firkete σ e_y |
+|---|---|---|---|---|---|
+| harder, polinom (VisionPilot) | %99,7 | 15 | 8,5 cm | 3,10° | 22,3 cm |
+| harder, parametrik kübik | %99,7 | 23 | 7,8 cm | 4,74° | 19,8 cm |
+| project, polinom | %100 | 0 | 3,0 cm | 0,31° | |
+| project, parametrik | %100 | 0 | 3,0 cm | 0,35° | |
+
+- Sentetik 15 m / 80° yayda parametrik açıkça daha iyi (e_y −1,8 cm vs −11,3 cm, e_ψ 1,2° vs 5,7°; `tests/test_postprocess.py`).
+- Gerçek videoda daha iyi değil: daha fazla anlamsız kare, daha pürüzlü yön. Kübik fazladan serbestlik derecesiyle
+  noktaların gürültüsünü de izliyor.
+- Asıl neden `sharp_curve_fit.png`'de: 998. karede AutoSteer'in kendi noktaları kaputun önünde kanca çiziyor; iki
+  uydurma da onu izliyor. Sorun uydurmada değil, modelin en yakın noktalarında. Upstream'e öneri yok.
+- Olası gerçek çözümler (denenmedi): en yakın birkaç noktayı zamansal tutarlılığa göre elemek, CTE'yi tek bir en
+  yakın nokta yerine birkaç noktanın uydurmasından almak, veya bu kareleri füzyonda düşük güvenle işaretlemek.
 
 ## 05 için gürültü tahmini
 

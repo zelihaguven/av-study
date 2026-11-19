@@ -37,9 +37,10 @@ kayıksa sonraki de büyük ihtimalle sağa kayık. İkincisi, asıl başarısı
 
 ![Firkete virajda polinom](04-perception/results/failures/4_polinom_modeli.png)
 
-Orman yolundaki firkete virajlarda model aslında makul bir yol çiziyor; bozulan son işleme. `y = a x² + b x + c`
-biçimindeki bir polinom, yana dönen bir yolu temsil edemiyor ve RANSAC 2 m yarıçaplı anlamsız bir eğri
-uyduruyor. Diğer başarısızlıklar güneş parlaması ve aşırı pozlama. Bu hatalar saniyelerce sürüyor ve hiçbiri
+Orman yolundaki firkete virajlarda RANSAC 2 m yarıçaplı anlamsız bir eğri uyduruyor. İlk tahminim
+`y = a x² + b x + c` polinomunun keskin virajı temsil edemediğiydi; daha esnek, parametrik bir uydurma denedim
+ve iyileşmedi. Asıl sorun modelin kaputun hemen önündeki noktalarının kanca çizmesi; her iki uydurma da o kancayı
+izliyor. Diğer başarısızlıklar güneş parlaması ve aşırı pozlama. Bu hatalar saniyelerce sürüyor ve hiçbiri
 "Gaussian gürültü" değil.
 
 **Yan bulgu:** Kodu okurken AutoSpeed'de bir tutarsızlık buldum. Model sınıf olasılıklarını zaten sigmoid'den
@@ -96,8 +97,9 @@ direksiyon girdisiyle durumu ileri taşıyor.
   algı kaybolduğunda ayakta kalmak.
 - Bir algı modelini değerlendirirken titreşimin büyüklüğü kadar yapısı da önemli: ilişkili hatalar ve kümeli
   kayıplar filtrenin avantajını eritiyor.
-- Gerçek başarısızlıklar (firkete, parlama) Gaussian modellerin dışında kalıyor ve bunların yarısı modelden değil
-  son işlemeden geliyor.
+- Gerçek başarısızlıklar (firkete, parlama) Gaussian modellerin dışında kalıyor. Firketede ilk suçladığım son
+  işleme çıktı ama değildi: daha esnek bir uydurma denedim, iyileşmedi; bozuk olan modelin kaputun önündeki
+  noktalarıydı. "Bir hipotezi gerçek veride test et" dersi.
 
 Bu oyuncak sistem VisionPilot'tan birçok yerde farklı: algı burada doğrudan yanal hata veriyor, kontrolcü
 ileriye bakmıyor, boylamsal kontrol yok, zamanlama ideal. Farkların tam listesi repoda. Ama bir sistemin

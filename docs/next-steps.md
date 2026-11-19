@@ -37,9 +37,9 @@ geçerli olduğunu kontrol et.
    (0,25 → 0,20, 15 → 12).
    - [x] Tek bir dokümantasyon PR'ı taslağı: `docs/contributions/stale-comments-pr.md`
 4. **Keskin virajda son işleme.** `y = a x² + b x + c` yana dönen yolu temsil edemiyor (04, başarısızlık 4).
-   - [ ] Alternatifi dene: yay uzunluğuna göre parametrik uydurma veya `x(y)` + `y(x)` arasında seçim; harder_challenge
-     firkete bölümünde (39–44 s) karşılaştır
-   - [ ] Sonuç iyiyse issue olarak öner (önce tartışma, sonra PR)
+   - [x] Parametrik kübik uydurma denendi (`04-perception/src/sharp_curve_fit.py`): sentetik yayda daha iyi, gerçek
+     videoda değil (anlamsız kare 15 → 23). Asıl neden modelin yakın noktalarındaki kanca. **Negatif sonuç, issue yok.**
+     04 notlarındaki "son işleme hatası" iddiası düzeltildi.
 
 ## B. Bu repoda derinleştirme
 

@@ -111,3 +111,44 @@ def test_udacity_calibration_lane_width():
     assert right[1] - left[1] == pytest.approx(-3.7, abs=1e-6)
     assert left[0] == pytest.approx(right[0], abs=1e-6)
     assert isinstance(cal, Calibration) and cal.crop_top == 80
+
+
+# ── A4: parametrik uydurma (VisionPilot'ta yok, karşılaştırma için) ─────────
+
+# Yay testleri için ince çözünürlüklü kamera: satır başına 0,04 m (64 nokta ~20 m'yi kapsar)
+H_FINE = np.array([[0.0, -0.04, 5 + 511 * 0.04],
+                   [-0.01, 0.0, 5.12],
+                   [0.0, 0.0, 1.0]])
+
+
+def _xp_for_arc(R, theta_max):
+    """Sola dönen R yarıçaplı yay, x = 5'ten ileri başlayıp theta_max'a kadar (H_FINE kamerası)."""
+    X = 5 + (511 - ROWS) * 0.04
+    dx = np.clip(X - 5, 0, R * np.sin(theta_max))
+    y = R - np.sqrt(R ** 2 - dx ** 2)
+    h = (X - 5 <= R * np.sin(theta_max)).astype(float)
+    return [(512 - y / 0.01) / 1024, h]
+
+
+def test_parametric_matches_poly_on_straight_and_gentle():
+    from inspect_model import postprocess_autosteer_parametric
+    for f in (lambda X: 0.5 + 0 * X, lambda X: X ** 2 / 400):
+        raw = _xp_for_path(f)
+        a, b = postprocess_autosteer(raw, H_TOY), postprocess_autosteer_parametric(raw, H_TOY)
+        assert b.valid
+        # 100 m'lik parabol yay uzunluğuna göre tam kübik değil: birkaç cm / birkaç onda bir derece fark kabul
+        assert b.e_y == pytest.approx(a.e_y, abs=0.02)
+        assert b.e_psi == pytest.approx(a.e_psi, abs=np.deg2rad(0.3))
+        assert b.kappa == pytest.approx(a.kappa, abs=2e-4)
+
+
+def test_parametric_handles_sharp_arc_better():
+    """15 m yarıçap, 80°'ye kadar dönüyor: eğim y' 5,7'ye çıkıyor. Parametrik κ gerçeğe yakın, polinom değil."""
+    from inspect_model import postprocess_autosteer_parametric
+    raw = _xp_for_arc(15.0, np.deg2rad(80))
+    a, b = postprocess_autosteer(raw, H_FINE), postprocess_autosteer_parametric(raw, H_FINE)
+    assert b.valid
+    assert b.kappa == pytest.approx(1 / 15, rel=0.15)
+    assert abs(b.kappa - 1 / 15) < abs(a.kappa - 1 / 15) if a.valid else True
+    assert b.e_y == pytest.approx(0.0, abs=0.05)
+    assert b.e_psi == pytest.approx(0.0, abs=np.deg2rad(3))

@@ -88,7 +88,7 @@ Udacity videoları (2943 kare), Xeon 2,1 GHz CPU:
 Üç model sırayla: kare başına ~234 ms (≈ 4,3 Hz; VisionPilot'un hedefi 10 Hz). INT8 bu CPU'da hızlandırmıyor.
 
 **Bulgular:** 05'in gürültü varsayımı otoyolda ~10 kat kötümser ama gerçek hatalar ilişkili ve sistematik
-(firkete, parlama); keskin virajda bozulmanın yarısı modelden değil 2. derece polinomlu son işlemeden geliyor;
+(firkete, parlama); firketede bozulan şey modelin kaputun önündeki noktaları (parametrik uydurma denendi, düzeltmedi);
 VisionPilot'un C++ kodu AutoSpeed'in zaten sigmoid'li çıktısına ikinci kez sigmoid uyguluyor. Ayrıntılar
 [`notes.md`](notes.md).
 

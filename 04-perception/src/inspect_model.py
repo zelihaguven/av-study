@@ -243,6 +243,71 @@ def postprocess_autosteer(raw, H_resized: np.ndarray, rng: np.random.Generator |
                       e_y=-cte_vp, e_psi=-yaw_vp, kappa=path_curvature(world[inl], coef))
 
 
+def fit_path_parametric(pts: np.ndarray, rng: np.random.Generator, iters: int = 80,
+                        thresh: float = 0.20, min_inliers: int = 12, deg: int = 3):
+    """VisionPilot'ta olmayan alternatif (docs/next-steps.md A4): x(s) ve y(s) için ayrı `deg`. derece polinom.
+    Derece 3: 2. derece, uzun bir parabolü (yay uzunluğuna göre 2. derece değil) tam yakalayamıyor.
+
+    pts yakından uzağa sıralı olmalı. s, ardışık noktalar arası mesafelerin birikimi (yay uzunluğu).
+    y = f(x) biçimi yol yana veya geri döndüğünde (firkete) tanımsızlaşır; parametrik biçim her şekli taşır.
+    Kalan: noktanın, eğri üzerindeki aynı s'teki noktaya Öklid uzaklığı.
+    Döndürür: (cx, cy, s, inlier_maskesi) veya inlier yetersizse maske None, hiç uydurulamazsa (None, None, s, None).
+    """
+    n = len(pts)
+    s = np.r_[0.0, np.cumsum(np.hypot(*np.diff(pts, axis=0).T))] if n else np.zeros(0)
+    k = deg + 1
+    if n < k:
+        return None, None, s, None
+    S = np.vander(s, k)
+    best = None
+    for _ in range(iters if n > k else 0):
+        idx = rng.choice(n, k, replace=False)
+        cx, *_ = np.linalg.lstsq(S[idx], pts[idx, 0], rcond=None)
+        cy, *_ = np.linalg.lstsq(S[idx], pts[idx, 1], rcond=None)
+        mask = np.hypot(S @ cx - pts[:, 0], S @ cy - pts[:, 1]) < thresh
+        if best is None or mask.sum() > best.sum():
+            best = mask
+    if best is None:
+        best = np.ones(n, bool)
+    if best.sum() < k:
+        return None, None, s, None
+    cx, *_ = np.linalg.lstsq(S[best], pts[best, 0], rcond=None)
+    cy, *_ = np.linalg.lstsq(S[best], pts[best, 1], rcond=None)
+    return cx, cy, s, (best if best.sum() >= min_inliers else None)
+
+
+def postprocess_autosteer_parametric(raw, H_resized: np.ndarray,
+                                     rng: np.random.Generator | None = None) -> LaneResult:
+    """postprocess_autosteer ile aynı nokta seçimi ve geçerlilik kuralları, ama parametrik uydurma.
+    CTE ve yön en yakın inlier noktada (s_ref); eğrilik ilk 25 m'deki inlier'larda medyan."""
+    rng = rng if rng is not None else np.random.default_rng(0)
+    xp, h = np.asarray(raw[0]).ravel(), np.asarray(raw[1]).ravel()
+    rows = np.arange(N_WP) * (NET_H - 1) / (N_WP - 1)
+    keep = h >= 0.5
+    px = np.c_[xp[keep] * NET_W, rows[keep]][::-1]          # alttan üste = yakından uzağa
+    world = project(H_resized, px) if len(px) else np.zeros((0, 2))
+    ok = (world[:, 0] >= 0.5) & (world[:, 0] <= 120.0)
+    px, world = px[ok], world[ok]
+    cx, cy, s, inl = fit_path_parametric(world, rng)
+    if cx is None:
+        return LaneResult(False, f"yetersiz nokta ({len(world)})", px, world)
+    if inl is None:
+        return LaneResult(False, "inlier < 12", px, world, extra={"cx": cx, "cy": cy})
+    s_ref = float(s[inl].min())
+    x_ref, y_ref = np.polyval(cx, s_ref), np.polyval(cy, s_ref)
+    if abs(y_ref) > 3.0:
+        return LaneResult(False, "|CTE| > 3 m", px, world, inliers=int(inl.sum()))
+    dx, dy = np.polyval(np.polyder(cx), s_ref), np.polyval(np.polyder(cy), s_ref)
+    si = s[inl]
+    si = si[si - s_ref <= 25.0]
+    d1x, d1y = np.polyval(np.polyder(cx), si), np.polyval(np.polyder(cy), si)
+    d2x, d2y = np.polyval(np.polyder(cx, 2), si), np.polyval(np.polyder(cy, 2), si)
+    kappa = float(np.median((d1x * d2y - d1y * d2x) / np.maximum(d1x ** 2 + d1y ** 2, 1e-9) ** 1.5))
+    return LaneResult(True, "", px, world, inliers=int(inl.sum()), x_ref=float(x_ref),
+                      e_y=-float(y_ref), e_psi=-float(np.arctan2(dy, dx)), kappa=kappa,
+                      extra={"cx": cx, "cy": cy, "s": s})
+
+
 def sigmoid(x):
     return 1.0 / (1.0 + np.exp(-np.asarray(x, dtype=float)))
 
