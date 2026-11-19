@@ -23,17 +23,17 @@ cevaplayabilmek asıl hedef. Algoritmaların içine bu modülde girilmez.
 
 ## Görevler
 
-- [ ] `architecture.md` içindeki iki Mermaid diyagramını doldur
-- [ ] Modül arayüz tablosunu doldur (en az 6 satır, modüler stack için)
-- [ ] VisionPilot için aynı tabloyu doldur. Hangi model hangi özelliği (ACC, LKAS, AEB…) besliyor?
+- [x] `architecture.md` içindeki iki Mermaid diyagramını doldur
+- [x] Modül arayüz tablosunu doldur (en az 6 satır, modüler stack için)
+- [x] VisionPilot için aynı tabloyu doldur. Hangi model hangi özelliği (ACC, LKAS, AEB…) besliyor?
 - [x] "Sorular" bölümündeki 6 soruyu kendi cümlelerinle cevapla
 - [ ] PoV WG toplantısına en az 1 kez dinleyici olarak katıl, `notes.md`'ye 5 madde not al
 
 ## Kabul kriteri
 
-- [ ] İki diyagram GitHub'da render oluyor ve her okun üzerinde **taşınan veri** yazıyor
+- [x] İki diyagram GitHub'da render oluyor ve her okun üzerinde **taşınan veri** yazıyor
       (ör. "point cloud", "trajectory", "steering angle"), sadece ok değil.
-- [ ] Arayüz tablosunda her satır için giriş, çıkış ve tipik frekans (Hz) var.
+- [x] Arayüz tablosunda her satır için giriş, çıkış ve tipik frekans (Hz) var.
       Frekansı bilmiyorsan "?" yaz ve kaynağını bulunca güncelle. Uydurma sayı yok.
 - [x] 6 sorunun her biri en az 3 cümle ve en az birinde kaynak referansı var.
 - [ ] `docs/reading-log.md`'de bu modülün okumaları dolu.
