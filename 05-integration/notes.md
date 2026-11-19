@@ -2,8 +2,7 @@
 
 Tüm sayılar `python 05-integration/src/plots.py` çıktısından. Senaryo testlerle aynı: S-virajı
 R = 50 m, 10 m/s, 20 Hz sentetik algı. Gürültü `LaneNoise` varsayılanları: σ_y = 0,3 m,
-σ_ψ = 3°, σ_κ = 0,005 1/m. Bu değerler 04'te gerçek model çıktısından ölçülmedi, tahmin.
-04 bitince güncellenmeli.
+σ_ψ = 3°, σ_κ = 0,005 1/m. Bu değerler tahmin; 04'te gerçek model çıktısıyla karşılaştırıldı (aşağıda "04 ölçümleriyle karşılaştırma").
 
 ## Tasarım
 
@@ -93,6 +92,25 @@ Gürültülü durumda (alt panel) fark daha az çarpıcı ama aynı: 48,0 → 19
   gerçek bir L2 sistemi belli bir eşikte özelliği kapatıp sürücüye devretmeli (00, 6. soru: L2'de fallback
   sürücü). Bu simülasyonda devretme yok, araç kesinti ne kadar uzun olursa olsun sürmeye devam ediyor.
 
+## 04 ölçümleriyle karşılaştırma
+
+04'te AutoSteer'i Udacity videolarında çalıştırıp titreşimi ölçtüm (`04-perception/notes.md`, "05 için gürültü
+tahmini"). Aynı S-virajında 10 koşu ortalaması:
+
+| Gürültü | Takip | RMS CTE | Maks CTE | Direksiyon hızı RMS |
+|---|---|---|---|---|
+| 05 varsayılanı (0,3 m, 3°, %10 kayıp) | var | 13,9 cm | 33,6 cm | 19,5 °/s |
+| 05 varsayılanı | yok | 11,4 cm | 27,3 cm | 124,5 °/s |
+| 04 otoyol (0,03 m, 0,32°, kayıp yok) | var | 1,9 cm | 5,7 cm | 9,3 °/s |
+| 04 otoyol | yok | 1,5 cm | 4,3 cm | 16,6 °/s |
+| 04 zor yol (0,085 m, 3,2°, %0,3) | var | 16,6 cm | 39,1 cm | 39,0 °/s |
+| 04 zor yol | yok | 14,8 cm | 36,5 cm | 175,4 °/s |
+
+Varsayılanlar otoyol titreşimine göre ~10 kat kötümser; değiştirmedim, çünkü 04'ün yöntemi yavaş ve sistematik
+hataları göremiyor ve testler bu stres senaryosuna göre yazılmış. 1. sorudaki sonuç her gürültü seviyesinde
+geçerli: takip katmanı yanal hatayı değil direksiyonu iyileştiriyor. Gerçek gürültü ilişkili (ρ₁ ≈ 0,7) ve bunu
+burada modellemedim; sıradaki adım AR(1) gürültü olur.
+
 ## VisionPilot ile farklar (dürüstlük bölümü)
 
 00'daki VisionPilot diyagramına (`00-architecture/architecture.md`, 2. bölüm) göre bu model şu
@@ -102,9 +120,9 @@ noktalarda gerçek sistemden ayrılıyor:
    64 noktasını ve güvenlerini, AutoDrive eğriliği veriyor. Yanal füzyon bu noktalara RANSAC ile polinom
    uydurup hataları kendisi çıkarıyor. Aradaki adım (piksel → metre için homografi, polinom uydurma)
    burada yok.
-2. **Gürültü gerçekçi değil.** Burada gürültü bağımsız, Gaussian ve kareden kareye ilişkisiz. Gerçek
-   modelin hataları ilişkili (aynı parlama birkaç kare sürer), aykırı değerler içerir ve sahneye bağlıdır
-   (gece, yağmur, silik çizgi). Kayıplar da bağımsız değil, kümeli gelir. 3. sorudaki analiz bu yüzden iyimser.
+2. **Gürültü gerçekçi değil.** Burada gürültü bağımsız, Gaussian ve kareden kareye ilişkisiz. 04'te ölçülen
+   AutoSteer hataları ilişkili (ρ₁ ≈ 0,7), aykırı değerler içeriyor (zor yolda %10) ve sahneye bağlı (parlama,
+   firkete; `04-perception/results/failures/`). Kayıplar da kümeli. 3. sorudaki analiz bu yüzden iyimser.
 3. **Takip filtresi farklı.** Burada tek bir lineer Kalman var. VisionPilot CTE/yaw ve eğrilik için ayrı
    parçacık filtreleri kullanıyor ve eğriliği iki kaynaktan (AutoSteer yolu + AutoDrive) birleştiriyor.
 4. **Kontrolcü ileriyi görmüyor.** Burada Stanley + feedforward, κ'yı arka aksta okuyor. VisionPilot'ta

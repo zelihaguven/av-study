@@ -76,7 +76,37 @@ Satır referansları `VisionPilot/` altına göre. Şekiller onnxruntime ile de 
 
 ## Sonuçlar
 
-SONUÇLAR_YER_TUTUCU
+Udacity videoları (2943 kare), Xeon 2,1 GHz CPU:
+
+| | Otoyol (project) | Zor yol (harder_challenge) |
+|---|---|---|
+| Geçerli şerit | %100 | %99,7 |
+| e_y titreşimi σ (1 s ortalamaya göre) | 3,0 cm | 8,5 cm (firkete hariç 4,8 cm) |
+| e_ψ titreşimi σ | 0,32° | 3,2° |
+| Kareler arası ilişki ρ₁ | 0,66 | 0,65 |
+
+Üç model sırayla: kare başına ~234 ms (≈ 4,3 Hz; VisionPilot'un hedefi 10 Hz). INT8 bu CPU'da hızlandırmıyor.
+
+**Bulgular:** 05'in gürültü varsayımı otoyolda ~10 kat kötümser ama gerçek hatalar ilişkili ve sistematik
+(firkete, parlama); keskin virajda bozulmanın yarısı modelden değil 2. derece polinomlu son işlemeden geliyor;
+VisionPilot'un C++ kodu AutoSpeed'in zaten sigmoid'li çıktısına ikinci kez sigmoid uyguluyor. Ayrıntılar
+[`notes.md`](notes.md).
+
+![Titreşim](results/noise.png)
+
+İyi kareler:
+
+![Otoyol](results/overlay_1_otoyol.png)
+![Zemin değişimi](results/overlay_2_zemin_degisimi.png)
+![Orman virajı](results/overlay_3_orman_viraji.png)
+
+Başarısızlık kareleri (nedenleri `notes.md`'de):
+
+| | |
+|---|---|
+| ![](results/failures/1_parlama.png) | ![](results/failures/2_serit_yok.png) |
+| ![](results/failures/3_firkete_yaw.png) | ![](results/failures/4_polinom_modeli.png) |
+| ![](results/failures/5_yakin_nokta_sicramasi.png) | |
 
 ## Yazı
 

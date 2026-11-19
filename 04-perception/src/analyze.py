@@ -28,6 +28,9 @@ def load(name: str) -> dict[str, np.ndarray]:
         rows = list(csv.DictReader(f))
     out = {}
     for k in rows[0]:
+        if k == "reason":
+            out[k] = np.array([r[k] for r in rows])
+            continue
         try:
             out[k] = np.array([float(r[k]) if r[k] != "" else np.nan for r in rows])
         except ValueError:

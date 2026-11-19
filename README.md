@@ -22,7 +22,7 @@ tek kameralı L2 ADAS sistemi **VisionPilot** (Autoware Privately Owned Vehicle 
 | [`01-vehicle-model`](01-vehicle-model/) | Kinematik bisiklet modeli | Diğer modüllerin test edileceği simülatör | ✅ |
 | [`02-control`](02-control/) | Yanal/boylamsal kontrol | PID, Pure Pursuit, Stanley karşılaştırması | ✅ |
 | [`03-tracking`](03-tracking/) | Durum kestirimi | Kalman filtresi: şerit ve öndeki araç (CIPO) | ✅ |
-| [`04-perception`](04-perception/) | Öğrenilmiş algı | EgoLanes / AutoSteer çıktılarını okuma ve yorumlama | 🟨 |
+| [`04-perception`](04-perception/) | Öğrenilmiş algı | AutoSteer / AutoDrive / AutoSpeed çıktılarını okuma ve yorumlama | ✅ |
 | [`05-integration`](05-integration/) | Kapalı çevrim | Algı → takip → kontrol: mini VisionPilot | ✅ |
 | [`common`](common/) | Ortak araçlar | Referans yollar, metrikler | ✅ |
 | [`stanley-vs-pp`](stanley-vs-pp/) | Hızlı demo | Bisiklet modelinde Pure Pursuit ve Stanley, S-virajı karşılaştırması (testsiz, bağımsız) | ✅ |
@@ -69,7 +69,7 @@ pip install -r requirements.txt
 pytest
 ```
 
-`04-perception` ek bağımlılık ister, o modülün README'sine bak.
+`04-perception` ek bağımlılık (`onnxruntime`, `opencv-python-headless`) ve VisionPilot klonu ister, o modülün README'sine bak. 04'ün testleri bunlar olmadan da çalışır.
 
 ## Dokümanlar
 
