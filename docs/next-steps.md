@@ -31,11 +31,11 @@ geçerli olduğunu kontrol et.
 2. **Kontrol periyodu tutarsızlığı.** `modules/safety_guardian/planning/include/planning/config.hpp`: yorum "50Hz",
    değer `dt = 0.05` (20 Hz). Füzyon ise `dt = 0.10` (10 Hz) varsayıyor ve `update()` dt'siz çağrılıyor
    (`inference.cpp:207`).
-   - [ ] Hangi hızın amaçlandığını PoV WG tartışmalarından veya commit geçmişinden bul; issue veya küçük PR taslağı
+   - [x] Commit geçmişi: `dt` eski zaman tabanlı MPC'den kalma; etkili tek kullanımı `dkappa_ds`. Taslak: `docs/contributions/planning-dt-mismatch.md`
 3. **Bayat yorumlar (küçük "good first PR").** `auto_speed.hpp:35-36` (letterbox yok), `image_preprocessor.hpp:14`
    ("BEV" değil), `lateral_fusion.hpp:34-35,55` (CTE x = 0'da değil `x_ref`'te), `lateral_fusion.hpp:93,99`
    (0,25 → 0,20, 15 → 12).
-   - [ ] Tek bir dokümantasyon PR'ı taslağı
+   - [x] Tek bir dokümantasyon PR'ı taslağı: `docs/contributions/stale-comments-pr.md`
 4. **Keskin virajda son işleme.** `y = a x² + b x + c` yana dönen yolu temsil edemiyor (04, başarısızlık 4).
    - [ ] Alternatifi dene: yay uzunluğuna göre parametrik uydurma veya `x(y)` + `y(x)` arasında seçim; harder_challenge
      firkete bölümünde (39–44 s) karşılaştır
