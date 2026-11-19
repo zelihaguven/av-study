@@ -69,7 +69,9 @@ götürüyor. Filtrenin kalan hatası ise yavaş kayan bir hata ve doğrudan yol
 Peki filtre gereksiz mi? Hayır, iki yerde vazgeçilmez:
 
 1. **Direksiyon:** 130 °/s'lik bir komut hem konforsuz hem de gerçek bir direksiyon aktüatörünün yapamayacağı
-   bir şey. Modelde direksiyon sınırsız hızlı olduğu için filtresiz sistem simülasyonda olduğundan iyi görünüyor.
+   bir şey. Modelde direksiyon ideal (gecikmesiz) olduğu için bu fark simülasyonda yanal hataya yansımıyor.
+   Autoware'in direksiyon gecikmesi değerlerini (0,24 s + 0,27 s) ekleyince ise bu kontrolcü filtreli de
+   filtresiz de kararsızlaşıyor: gerçek araçta önce gecikmeyi hesaba katan bir kontrolcü gerekiyor.
 2. **Uzun kesintiler:** Algı kaybı arttıkça fark açılıyor.
 
 ![Kayıp taraması](05-integration/results/dropout_sweep.png)

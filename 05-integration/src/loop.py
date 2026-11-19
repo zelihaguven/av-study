@@ -27,11 +27,17 @@ class IntegrationResult:
 def run(path, v: float, noise, p_drop: float, use_tracker: bool = True,
         use_feedforward: bool = True, seed: int = 0,
         dt: float = 0.05, params: VehicleParams = VehicleParams(),
-        tracker_q: tuple[float, float, float] = TRACKER_Q) -> IntegrationResult:
+        tracker_q: tuple[float, float, float] = TRACKER_Q,
+        steer_delay: float = 0.0, steer_tau: float = 0.0) -> IntegrationResult:
     """dt = kamera periyodu (20 Hz). Araç modeli 01'deki step ile ilerletilir.
 
     use_tracker=False: ölçüm doğrudan kontrolcüye gider; ölçüm yoksa son ölçüm tutulur.
     Hız sabit kabul edilebilir (boylamsal kontrol bu modülün konusu değil).
+
+    Direksiyon aktüatörü (isteğe bağlı, varsayılan ideal): komut `steer_delay` saniye saf gecikmeyle ve
+    `steer_tau` zaman sabitli birinci derece gecikmeyle tekerleğe geçer. Autoware'in MPC ayarları
+    0,24 s ve 0,27 s kullanıyor (mpc.param.yaml; 00 notları). `steer` kaydı komutu, araç uygulananı görür.
+    Takip katmanı tahminde komutu kullanır (gerçek açıyı bilmez).
     """
     rng = np.random.default_rng(seed)
     memory = NoiseMemory()        # ilişkili gürültü / kümeli kayıp için (LaneNoise.rho, burst_len)
@@ -39,6 +45,10 @@ def run(path, v: float, noise, p_drop: float, use_tracker: bool = True,
     tracker = LaneTracker(params.wheelbase, noise, tracker_q)
     held = np.zeros(3)            # tracker'sız modda son geçerli ölçüm
     delta = 0.0
+    n_delay = int(round(steer_delay / dt))
+    cmd_queue = [0.0] * n_delay       # gecikme hattı
+    applied = 0.0                     # tekerleğe geçen açı
+    lag = 1.0 - np.exp(-dt / steer_tau) if steer_tau > 0 else 1.0
     end_idx = len(path.x) - 2
     n_max = int(round(2.0 * path.s[-1] / max(v, 0.1) / dt))
 
@@ -63,7 +73,9 @@ def run(path, v: float, noise, p_drop: float, use_tracker: bool = True,
         ests.append(np.array(est, dtype=float))
         if nearest_index(path, state[0], state[1]) >= end_idx:
             break
-        state = step(state, 0.0, delta, dt, params)
+        cmd_queue.append(delta)
+        applied += lag * (cmd_queue.pop(0) - applied)
+        state = step(state, 0.0, applied, dt, params)
 
     return IntegrationResult(t=np.array(ts), states=np.array(states), steer=np.array(steers),
                              cte=np.array(ctes), measured=zs, estimate=np.array(ests))

@@ -40,8 +40,7 @@ beyaz gürültü direksiyonu her karede sağa sola atıyor ama bu atışlar konu
 
 Yani takipsiz sistem simülasyonda "çalışıyor" görünüyor, çünkü modelde direksiyon sınırsız hızda dönebiliyor
 ve gecikmesiz. Gerçek araçta 130 °/s RMS'lik bir komut hem konforsuz hem de direksiyon aktüatörünün
-yapamayacağı bir şey. Hız sınırı ve gecikme (01 notları, madde 3) eklenince takipsiz sistemin yanal hatası da
-bozulur. Ölçmedim, bu bir çıkarım.
+yapamayacağı bir şey. Gecikme eklenince ne olduğu aşağıdaki "Direksiyon aktüatörü" bölümünde ölçüldü: çıkarımım kısmen yanlış çıktı.
 
 Kayıp oranı arttıkça yanal hatada da fark açılıyor (3. soru).
 
@@ -91,6 +90,33 @@ Gürültülü durumda (alt panel) fark daha az çarpıcı ama aynı: 48,0 → 19
 - **Sistem ne yapmalı:** Kovaryans burada da işe yarıyor (03, 2. soru). Kesinti uzadıkça `P` büyüyor;
   gerçek bir L2 sistemi belli bir eşikte özelliği kapatıp sürücüye devretmeli (00, 6. soru: L2'de fallback
   sürücü). Bu simülasyonda devretme yok, araç kesinti ne kadar uzun olursa olsun sürmeye devam ediyor.
+
+## Direksiyon aktüatörü (B8)
+
+1. sorudaki "modelde direksiyon ideal, gecikme eklenince takipsiz sistemin yanal hatası da bozulur" çıkarımını
+ölçtüm. `run(..., steer_delay, steer_tau)`: komut saf gecikme ve birinci derece gecikmeyle tekerleğe geçiyor;
+Autoware'in MPC ayarları 0,24 s ve 0,27 s (`mpc.param.yaml`). Varsayılanlar ideal, eski sonuçlar değişmedi.
+`actuator_delay.png`, `python 05-integration/src/actuator_delay.py`, 12 koşu, RMS gerçek CTE:
+
+| Aktüatör | 05 varsayılanı, takipli / takipsiz | 04 otoyol (ρ 0,6), takipli / takipsiz | Gürültüsüz |
+|---|---|---|---|
+| İdeal | 13,5 / 11,5 cm | 2,4 / 2,1 cm | 1,0 cm |
+| 0,24 s gecikme | 31,0 / 26,2 cm | 11,2 / 10,2 cm | 9,5 cm |
+| 0,27 s zaman sabiti | | | 6,4 cm |
+| 0,24 s + 0,27 s (Autoware) | 63 / 187 cm | 186 / 172 cm | **173 cm, direksiyon %43 sınırda** |
+
+- **Çıkarımım kısmen yanlış.** Saf gecikmede iki sistem de 2–5 kat kötüleşiyor ve takipsiz sistem yanal hatada yine
+  biraz önde. Takip katmanı gecikmeye karşı koruma sağlamıyor.
+- **Asıl bulgu: kontrol döngüsü kararsızlaşıyor.** Gecikme ve zaman sabiti birlikteyken gürültüsüz durumda bile
+  araç 3,4 m sapıyor ve direksiyon zamanın %43'ünde sınıra dayanıyor (sınır çevrimi). Kontrolcü (Stanley tipi
+  geri besleme, k = 1, + eğrilik ileri beslemesi) ideal aktüatöre göre ayarlandı; toplam ~0,5 s gecikmeye
+  dayanmıyor. Gecikme 0,12 s'ye inince kararlı (10 cm).
+- Kararsız durumda takipli/takipsiz farkı (63 / 187 cm) anlamlı bir karşılaştırma değil; sınır çevriminin
+  genliği gürültüye bağlı ve düzensiz.
+- Sonuç: gerçek bir araçta önce kontrolcünün aktüatör gecikmesini hesaba katması gerekiyor (gecikme telafisi,
+  düşük kazanç ya da aktüatör modelli MPC). Autoware'in MPC'si `input_delay` parametresini tam bunun için
+  taşıyor; VisionPilot'un uzamsal MPC'si de aynı soruyu cevaplamak zorunda. Gecikme telafisi bu repoda denenmedi
+  (`docs/next-steps.md`, 8b).
 
 ## 04 ölçümleriyle karşılaştırma
 
@@ -196,6 +222,6 @@ noktalarda gerçek sistemden ayrılıyor:
    çıkarım süresi gecikme ekler. VisionPilot'un V4L2 varsayılanı 10 fps, kontrol periyodunun da 20 mi
    50 Hz mi olduğu kodda net değil (00'daki not).
 7. **Araç ideal.** Kinematik bisiklet modeli: kayma yok, direksiyon gecikmesi ve hız sınırı yok (01 notları).
-   Bu yüzden takipsiz sistemin yanal hatası olduğundan iyi görünüyor (1. soru).
+   Autoware'in gecikme değerleri eklenince bu kontrolcü kararsızlaşıyor ("Direksiyon aktüatörü" bölümü).
 8. **Devretme ve güvenlik katmanı yok.** VisionPilot LDW, FCW ve AEB uyarıları üretiyor. Burada kesinti
    veya büyük kovaryans durumunda sürücüye devretme mantığı yok.

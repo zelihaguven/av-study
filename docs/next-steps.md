@@ -48,5 +48,7 @@ geçerli olduğunu kontrol et.
    yanal hatanın düşüp düşmediğini ölç
 6. [x] 04: INT8 yavaşlığı donanımdan değil; QDQ konvolüsyonlar tamsayıya dönüşmüyor (04 notları). Kalan engel bulunmadı.
 7. [x] 04: paralel + intra_op = 1 → 164 ms (6,1 Hz); varsayılan thread ayarıyla paralel daha yavaş
-8. [ ] 02/05: direksiyon gecikmesi (0,24 s) ve hız sınırı ekleyip takipsiz sistemin yanal hatasını yeniden ölç
-   (05 notlarında "ölçmedim, çıkarım" olarak geçen iddia)
+8. [x] 05: direksiyon gecikmesi ölçüldü (`05-integration/notes.md`, "Direksiyon aktüatörü"). Çıkarım kısmen yanlış;
+   asıl bulgu: 0,24 s + 0,27 s ile kontrol döngüsü kararsız.
+8b. [ ] 05: gecikme telafisi (durumu gecikme kadar ileri tahmin et) veya kazanç ayarı ile Autoware aktüatöründe
+   kararlılığı geri getir
