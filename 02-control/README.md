@@ -25,27 +25,47 @@ Modül sonunda şunları cevaplayabilmelisin:
 | Dosya | İçerik |
 |---|---|
 | `src/controllers.py` | `PID` sınıfı, `pure_pursuit(...)`, `stanley(...)` |
-| `src/closed_loop.py` | `run_closed_loop(path, controller, v_ref, x0_offset, dt, T)`: 01'in modeliyle kapalı çevrim; zaman, durumlar, direksiyon, CTE döndürür |
+| `src/plots.py` | 4 grafik + sayısal özet: `python 02-control/src/plots.py` (repo kökünden) |
+| `src/closed_loop.py` | `run_closed_loop(path, controller, v_ref, y0_offset, dt, T, **ctrl_kwargs)`: 01'in modeliyle kapalı çevrim; zaman, durumlar, direksiyon, CTE döndürür |
 
 Kazançlar (`k`, `Ld`, PID katsayıları) senin seçimin; varsayılan değerleri koda yaz,
 seçim gerekçesini `notes.md`'ye.
 
 ## Görevler
 
-- [ ] PID hız kontrolü → `test_pid_speed` yeşil
-- [ ] Pure Pursuit → düz yolda 1 m ofsetten toparlanma
-- [ ] Stanley → aynı test
-- [ ] S-virajda (R = 50 m, v = 10 m/s) iki kontrolcü
-- [ ] `results/s_curve_paths.png`: yol + iki kontrolcünün yörüngesi
-- [ ] `results/s_curve_cte.png`: CTE(t), iki kontrolcü üst üste
-- [ ] `results/lookahead_sweep.png`: Pure Pursuit için `Ld` ∈ [2, 15] m vs RMS CTE ve maks |direksiyon hızı|
-- [ ] `notes.md`: yukarıdaki 4 soruya grafiklere dayanan cevaplar
+- [x] PID hız kontrolü → `test_pid_speed` yeşil
+- [x] Pure Pursuit → düz yolda 1 m ofsetten toparlanma
+- [x] Stanley → aynı test
+- [x] S-virajda (R = 50 m, v = 10 m/s) iki kontrolcü
+- [x] `results/s_curve_paths.png`: yol + iki kontrolcünün yörüngesi
+- [x] `results/s_curve_cte.png`: CTE(t), iki kontrolcü üst üste
+- [x] `results/lookahead_sweep.png`: Pure Pursuit için `Ld` ∈ [2, 15] m vs RMS CTE ve maks |direksiyon hızı|
+- [x] `notes.md`: yukarıdaki 4 soruya grafiklere dayanan cevaplar
+
+## Sonuçlar
+
+S-virajı, R = 50 m, v = 10 m/s:
+
+| | RMS CTE | Maks \|CTE\| | Maks direksiyon hızı |
+|---|---|---|---|
+| Pure Pursuit (Ld = 5 m) | 2,2 cm | 10,3 cm | 8 °/s |
+| Stanley (k = 1) | 6,3 cm | 7,3 cm | 22 °/s |
+
+![Yörüngeler](results/s_curve_paths.png)
+
+![CTE ve direksiyon hızı](results/s_curve_cte.png)
+
+![İleri bakış taraması](results/lookahead_sweep.png)
+
+Ek (2. soru için): ![Stanley yumuşatma terimi](results/stanley_soft.png)
+
+Yorumlar ve 4 sorunun cevabı: [`notes.md`](notes.md).
 
 ## Kabul kriteri
 
-- [ ] `pytest 02-control` tamamen yeşil (eşikler `tests/test_control.py` içinde)
-- [ ] 3 grafik üretilmiş ve bu README'den link verilmiş
-- [ ] `notes.md`'de her soru için en az bir grafiğe atıf var
+- [x] `pytest 02-control` tamamen yeşil (eşikler `tests/test_control.py` içinde)
+- [x] 3 grafik üretilmiş ve bu README'den link verilmiş
+- [x] `notes.md`'de her soru için en az bir grafiğe atıf var
 
 ## Yazı
 
