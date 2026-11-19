@@ -1,4 +1,4 @@
-﻿# Bisiklet modeli, Pure Pursuit ve Stanley
+# Bisiklet modeli, Pure Pursuit ve Stanley
 
 Ders notlarındaki Bölüm 4 (kinematik bisiklet modeli) ve Bölüm 5'teki (Pure Pursuit,
 Stanley) kavramların en küçük çalışan hali. Araç, yolun 2 m solundan başlayıp S şeklinde
@@ -40,6 +40,8 @@ python stanley_vs_pp.py
 
 Ekranı olmayan bir makinede (sunucu, CI) grafik penceresi açılamazsa `MPLBACKEND=Agg` ile çalıştır;
 PNG dosyaları yine kaydedilir.
+
+PowerShell betik çalıştırmayı engellerse önce `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned` komutunu bir kez çalıştır.
 
 ## Deneyebileceklerin
 

@@ -26,7 +26,7 @@ cevaplayabilmek asıl hedef. Algoritmaların içine bu modülde girilmez.
 - [ ] `architecture.md` içindeki iki Mermaid diyagramını doldur
 - [ ] Modül arayüz tablosunu doldur (en az 6 satır, modüler stack için)
 - [ ] VisionPilot için aynı tabloyu doldur. Hangi model hangi özelliği (ACC, LKAS, AEB…) besliyor?
-- [ ] "Sorular" bölümündeki 6 soruyu kendi cümlelerinle cevapla
+- [x] "Sorular" bölümündeki 6 soruyu kendi cümlelerinle cevapla
 - [ ] PoV WG toplantısına en az 1 kez dinleyici olarak katıl, `notes.md`'ye 5 madde not al
 
 ## Kabul kriteri
@@ -35,7 +35,7 @@ cevaplayabilmek asıl hedef. Algoritmaların içine bu modülde girilmez.
       (ör. "point cloud", "trajectory", "steering angle"), sadece ok değil.
 - [ ] Arayüz tablosunda her satır için giriş, çıkış ve tipik frekans (Hz) var.
       Frekansı bilmiyorsan "?" yaz ve kaynağını bulunca güncelle. Uydurma sayı yok.
-- [ ] 6 sorunun her biri en az 3 cümle ve en az birinde kaynak referansı var.
+- [x] 6 sorunun her biri en az 3 cümle ve en az birinde kaynak referansı var.
 - [ ] `docs/reading-log.md`'de bu modülün okumaları dolu.
 
 ## Yazı
