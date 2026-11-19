@@ -112,8 +112,16 @@ varsayılan iş parçacığı ayarı. Video boyunca medyan (`analyze.py`, ms):
   sırayla çalışınca hedefin yarısına bile ulaşılmıyor. VisionPilot modelleri `std::async` ile paralel çalıştırıyor;
   burada sırayla çalıştı.
 - **INT8 bu CPU'da hızlandırmıyor.** Tek bir karede ayrı ölçüm (15 tekrar medyanı): AutoSteer fp32 53 / int8 82 ms,
-  AutoSpeed 68 / 123 ms, AutoDrive 62 / 47 ms. Olası sebep, bu sanal CPU'da INT8 hızlandırma
-  komutlarının (VNNI) bulunmaması; doğrulamadım. INT8 çıktısı fp32'ye yakın (aynı karede e_y −0,152 / −0,166 m).
+  AutoSpeed 68 / 123 ms, AutoDrive 62 / 47 ms. INT8 çıktısı fp32'ye yakın (aynı karede e_y −0,152 / −0,166 m).
+  **Sebep donanım değil** (ilk tahminim yanlıştı): CPU'da AVX512-VNNI ve AMX-INT8 var. onnxruntime profili
+  (B6): INT8 modelde konvolüsyonlar `QLinearConv`'a dönüşmüyor, FP32 `Conv` olarak kalıyor ve zamanın ~%40'ı
+  Quantize/Dequantize'a gidiyor (AutoSteer: Conv %49, DQ %31, Q %8). Modeller PyTorch PT2E QDQ biçiminde; float bias
+  bir engel (bias'ı int32'ye nicemleyince AutoSteer'de 44 Conv'dan 4'ü birleşti, 83 → 67 ms) ama tek engel değil.
+  Kalan engelleri bulmadım. SiLU da INT8'de birleşmiyor (FP32'de `QuickGelu`, INT8'de ayrı `Mul` + `Sigmoid`).
+- **Paralel çalıştırma (B7, `src/parallel_timing.py`):** VisionPilot gibi üç modeli aynı anda çalıştırmak
+  varsayılan ayarla **yavaşlatıyor** (242 → 325 ms), çünkü her oturum 4 iş parçacığı açıp 4 çekirdeği eziyor.
+  Her oturuma `intra_op_num_threads = 1` verince paralel 164 ms ≈ 6,1 Hz: sıralı varsayılandan 1,5 kat hızlı ama
+  10 Hz'in altında. C++'ta da iş parçacığı sayısı ile `std::async` paralelliği birlikte ayarlanmalı.
 - Ayrı ölçüm ile video medyanı farklı (AutoSteer 53 / 40 ms): ısınma ve önbellek etkisi. Sayılar ±%30 okunmalı.
 
 ## Başarısızlık kareleri

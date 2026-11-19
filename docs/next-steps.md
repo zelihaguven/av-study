@@ -46,7 +46,7 @@ geçerli olduğunu kontrol et.
 5. [x] 05: ilişkili (AR(1)) gürültü ve kümeli kayıp (sıra dışı yapıldı) (`05-integration/notes.md`, "Gürültünün yapısı")
 5b. [ ] 05: takip katmanına ilişkili gürültüyü bildir (gürültüyü durum olarak ekle / shaping filter) ve ρ = 0,6'da
    yanal hatanın düşüp düşmediğini ölç
-6. [ ] 04: INT8'in bu CPU'da neden yavaş olduğunu doğrula (`lscpu` bayrakları, onnxruntime profili)
-7. [ ] 04: modelleri `std::async` gibi paralel çalıştırınca kare süresi (ThreadPool ile)
+6. [x] 04: INT8 yavaşlığı donanımdan değil; QDQ konvolüsyonlar tamsayıya dönüşmüyor (04 notları). Kalan engel bulunmadı.
+7. [x] 04: paralel + intra_op = 1 → 164 ms (6,1 Hz); varsayılan thread ayarıyla paralel daha yavaş
 8. [ ] 02/05: direksiyon gecikmesi (0,24 s) ve hız sınırı ekleyip takipsiz sistemin yanal hatasını yeniden ölç
    (05 notlarında "ölçmedim, çıkarım" olarak geçen iddia)
