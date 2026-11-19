@@ -1,20 +1,37 @@
 # Terimler Sözlüğü
 
-Kendi cümlenle tanımla. Kopyalanmış tanım yerine anladığın tanım.
+Tanımlar bu repoda gördüklerimize dayanıyor; mümkün olan yerde ilgili sonuç veya dosya verildi.
 
 | Terim (EN) | Türkçe | Tanım | İlk geçtiği modül |
 |---|---|---|---|
-| ODD (Operational Design Domain) | Operasyonel tasarım alanı | | 00 |
-| Ego vehicle | Ego araç | | 00 |
-| CIPO (Closest In-Path Object) | Yoldaki en yakın nesne | | 03 |
-| Cross-track error | Yanal sapma hatası | | 02 |
-| Heading / yaw error | Yön açısı hatası | | 02 |
-| Lookahead distance | İleri bakış mesafesi | | 02 |
-| Feedforward / feedback | İleri besleme / geri besleme | | 02 |
-| Kinematic bicycle model | Kinematik bisiklet modeli | | 01 |
-| Kalman filter, NEES | Kalman filtresi, normalize kestirim hata karesi | | 03 |
-| Semantic segmentation | Anlamsal bölütleme | | 04 |
-| BEV (Bird's-Eye View) | Kuş bakışı görünüm | | 04 |
-| End-to-end (E2E) | Uçtan uca | | 00 |
-| ACC / AEB / LKAS / LDW | | | 00 |
-| TRL (Technology Readiness Level) | Teknoloji hazırlık seviyesi | | 00 |
+| ODD (Operational Design Domain) | Operasyonel tasarım alanı | Sistemin güvenle çalışmak üzere tasarlandığı koşulların listesi: yol tipi, hız aralığı, hava, ışık, şerit çizgisi var mı. HD haritalı bir sistemin ODD'si coğrafyayla, tek kameralı sistemin ODD'si görüş koşullarıyla sınırlanır (00, 2. soru). | 00 |
+| Ego vehicle | Ego araç | Yazılımın kontrol ettiği, kendi aracımız. "Ego şerit", "ego yol" bu aracın içinde bulunduğu ve gideceği yer. | 00 |
+| CIPO (Closest In-Path Object) | Yoldaki en yakın nesne | Ego aracın gideceği yol üzerindeki en yakın nesne, genelde öndeki araç. ACC mesafeyi buna göre ayarlar, AEB buna göre fren yapar. VisionPilot'ta AutoSpeed sınıf 1 (aynı şerit) ve 2 (araya girebilecek komşu şerit) olarak işaretler (04). | 03 |
+| Cross-track error (CTE) | Yanal sapma hatası | Aracın referans yola dik uzaklığı. Bu repoda yol yönüne göre **sol pozitif** (`common/paths.py`). VisionPilot'ta işaret ters: "+ = ego yolun sağında" (04). | 02 |
+| Heading / yaw error | Yön açısı hatası | Aracın baktığı yön ile yolun teğeti arasındaki açı. Bu repoda `e_ψ = yaw_araç − yaw_yol`. | 02 |
+| Lookahead distance | İleri bakış mesafesi | Pure Pursuit'in hedef aldığı noktanın araca uzaklığı. Kısa olunca yolu sıkı izler ama direksiyon sertleşir; uzun olunca yumuşar ama virajda içeri keser (02: Ld 2 m → 0,2 cm, 15 m → 34 cm RMS). | 02 |
+| Feedforward / feedback | İleri besleme / geri besleme | İleri besleme bilinen bir şeyden (yol eğriliği) gereken komutu doğrudan hesaplar; geri besleme ölçülen hatayı düzeltir. Eğrilik ileri beslemesi olmadan virajda kalıcı sapma kalır, çünkü geri besleme komutu ancak hata varken üretir (05: 58 cm → 3,5 cm). | 02 |
+| Kinematic bicycle model | Kinematik bisiklet modeli | Dört tekerleği iki tekerleğe indiren, lastiklerin kaymadığını varsayan araç modeli. Durum `[x, y, yaw, v]`, sabit direksiyonda yarıçap `R = L / tan δ`. Düşük yanal ivmede yeterli, hızlı virajda ve kaygan zeminde yanlış (01 notları). | 01 |
+| Euler / RK4 | Euler / Runge-Kutta 4 | Diferansiyel denklemi küçük adımlarla ilerletme yöntemleri. Euler 1. mertebe (adım 10 kat küçülünce hata 10 kat), RK4 4. mertebe (01: dt = 0,01'de 1e-13). | 01 |
+| Pure Pursuit | Saf takip | Arka aksı ileri bakış noktasına teğet bir yayla bağlayan geometrik yanal kontrolcü: `δ = atan(2L sin α / Ld)`. Sabit eğrilikte hatasız, eğrilik değişiminde erken döner (02). | 02 |
+| Stanley | Stanley kontrolcüsü | Ön aksın yön hatası ile yanal hatasını birleştiren kontrolcü: `δ = e_ψ_yol + atan(k e / (k_soft + v))`. İleriye bakmaz; düşük hızda sert, yumuşatma terimi `k_soft` bunu sınırlar (02). | 02 |
+| PID, anti-windup | PID, integral doyma önleme | Hatanın kendisi (P), birikimi (I) ve değişim hızı (D) ile komut üreten kontrolcü. Çıkış sınırdayken integralin büyümeye devam etmesi aşmaya yol açar; anti-windup o sırada integrali dondurur (02). | 02 |
+| Kalman filter | Kalman filtresi | Bir hareket modeliyle tahmin (predict) ve ölçümle düzeltme (update) yapan, belirsizliği kovaryans `P` ile taşıyan lineer kestirici. Ölçüm gelmezse sadece tahmin yapar ve `P` büyür (03). Hataların bağımsız olduğunu varsayar; ilişkili gürültüyü ortalayarak silemez (05). | 03 |
+| Q / R | Süreç / ölçüm gürültüsü | Q modelin ne kadar yanılabileceği, R ölçümün ne kadar gürültülü olduğu. Önemli olan oranları: Q/R büyükse filtre ölçümü, küçükse modeli izler (03, `q_r_sweep.png`). | 03 |
+| NEES | Normalize kestirim hata karesi | `eᵀ P⁻¹ e`: hatayı filtrenin kendi söylediği belirsizlikle normalize eder. Tutarlı bir filtrede ortalaması durum boyutuna eşit. Çok büyükse filtre aşırı özgüvenli, çok küçükse aşırı temkinli; bu yüzden test bir aralık kontrolü (03). | 03 |
+| Particle filter | Parçacık filtresi | Dağılımı Gaussian varsaymak yerine yüzlerce örnekle (parçacık) temsil eden filtre. Çok modlu dağılımları taşıyabilir ama pahalıdır. VisionPilot 1.0 takip katmanında bunu kullanıyor (00, 04). | 03 |
+| Missed detection / dropout | Kaçırılan algı / kayıp | Algının bir karede sonuç vermemesi. Ortalama oran yanıltıcı: aynı %30 kayıp 1 s'lik kesintiler hâlinde gelirse araç şeritten çıkar (05, `noise_structure.png`). | 03 |
+| AR(1) noise | Birinci dereceden özbağlanımlı gürültü | Her karenin hatasının bir öncekine bağlı olduğu gürültü: `n_k = ρ n_{k−1} + w_k`. 04'te AutoSteer hatalarında ρ ≈ 0,7 ölçüldü; aynı σ'da bağımsız gürültüye göre yanal hatayı ~2 katına çıkarıyor (05). | 05 |
+| Semantic segmentation | Anlamsal bölütleme | Görüntüdeki her piksele bir sınıf (şerit, yol, araç) atayan model çıktısı. VisionPilot'un eski EgoLanes modeli böyleydi; 1.0'daki AutoSteer ise piksel maskesi yerine doğrudan 64 yol noktası veriyor (04). | 04 |
+| BEV (Bird's-Eye View) | Kuş bakışı görünüm | Görüntünün yere yukarıdan bakılıyormuş gibi dönüştürülmüş hâli; mesafeler metreye çevrilebilir. VisionPilot'taki "warped" görüntü kodda BEV diye geçse de aslında başka bir kameranın perspektifi (04). | 04 |
+| Homography | Homografi | Bir düzlemdeki noktaları başka bir düzleme (ör. görüntü pikseli → zemin metresi) eşleyen 3×3 matris. Tek kameralı sistemde piksel yol noktalarını metreye çevirmenin yolu; kamera değişince yeniden kalibre edilmeli (04). | 04 |
+| RANSAC | Rastgele örnek uzlaşısı | Aykırı noktalara dayanıklı model uydurma: rastgele küçük örneklerle modeller kurar, en çok noktanın uyduğunu seçer. VisionPilot yol noktalarına 2. derece polinomu böyle uyduruyor; keskin virajda polinom modelinin kendisi yetersiz kalıyor (04). | 04 |
+| NMS (Non-Maximum Suppression) | En yüksek olmayanı bastırma | Nesne algılamada aynı nesneye ait örtüşen kutulardan en yüksek skorlusunu bırakıp diğerlerini silme. AutoSpeed'de sınıftan bağımsız, IoU eşiği 0,45 (04). | 04 |
+| ONNX, FP32 / INT8 | ONNX, 32 bit / 8 bit | ONNX modellerin çerçeveden bağımsız saklandığı biçim. INT8 nicemlenmiş modeller küçüktür ve uygun donanımda hızlıdır; bu repodaki CPU'da çoğu model INT8 ile yavaşladı (04). | 04 |
+| End-to-end (E2E) | Uçtan uca | Kameradan direksiyon komutuna kadar tek bir öğrenilmiş model. Ara çıktılar gizli olduğu için hata ayıklaması zor. VisionPilot "hibrit": öğrenilmiş algı + klasik füzyon ve kontrol (00, 3. soru). | 00 |
+| IDM (Intelligent Driver Model) | Akıllı sürücü modeli | Öndeki araca uzaklık ve hız farkına göre ivme hesaplayan araç takip modeli. VisionPilot'un boylamsal planlaması (00). | 00 |
+| MPC (Model Predictive Control) | Model öngörülü kontrol | Gelecekteki bir ufuk boyunca araç modelini kullanarak en iyi komut dizisini çözen ve ilk komutu uygulayan kontrolcü. İleriye baktığı için eğrilik değişimini önceden görür. VisionPilot'un yanal kontrolü (N = 20 × 0,5 m). | 00 |
+| MRM (Minimal Risk Maneuver) | Asgari risk manevrası | Sistem arızasında veya ODD dışına çıkınca aracı güvenli duruma getiren manevra: acil duruş, konforlu duruş, kenara çekme. Autoware'de planning/control katmanında (00). | 00 |
+| ACC / AEB / LKAS / LDW / FCW / ISA | Adaptif hız sabitleyici / Otonom acil fren / Şerit tutma asistanı / Şerit terk uyarısı / Önden çarpışma uyarısı / Akıllı hız asistanı | VisionPilot'un sunduğu L2 ADAS özellikleri. ACC, FCW, AEB boylamsal (CIPO mesafesi); LKAS, LDW yanal (CTE). VisionPilot'ta FCW −5 ≤ a ≤ −3 m/s², AEB a < −5 m/s², LDW \|CTE\| > 0,5 m eşiğiyle (00). | 00 |
+| SAE L2 / L4 | SAE seviye 2 / 4 | J3016'ya göre L2'de sistem direksiyon ve hızı birlikte kontrol eder ama izleme ve fallback sürücüdedir; L4'te tanımlı ODD içinde fallback sistemdedir (00, 6. soru). | 00 |
+| TRL (Technology Readiness Level) | Teknoloji hazırlık seviyesi | Bir teknolojinin olgunluğunu 1 (temel ilke) ile 9 (sahada kanıtlanmış) arasında derecelendiren ölçek. Bu repodaki her şey simülasyon ve açık döngü video testi seviyesinde. | 00 |

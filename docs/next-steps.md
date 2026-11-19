@@ -1,6 +1,22 @@
 # Sıradaki Adımlar
 
-Bütün modüller ✅ olduktan sonra yapılacak ek işler. Öncelik sırasıyla. Her madde en fazla birkaç saatlik.
+**Sıra:** Önce ana TODO listesinde kalanlar (aşağıda "0"). Ek işler (A, B) **en son**, ana liste bitince.
+
+## 0. Ana listeden kalanlar (önce bunlar)
+
+Ana TODO'nun 35 maddesinden 32'si bitti, okuma günlüğü çıkarıldı. Kalan:
+
+- [x] `docs/glossary.md` tanımları
+- [ ] Medium yazıları (`docs/writing-plan.md`): 5 taslak, `docs/medium/` altında
+  - [ ] #1 Mimari (00)
+  - [ ] #2 Bisiklet modeli (01)
+  - [ ] #3 Pure Pursuit vs Stanley (02)
+  - [ ] #4 Kalman (03)
+  - [ ] #5 Tek kameradan direksiyona (04 + 05)
+
+---
+
+Aşağıdakiler ana liste bittikten sonra. Öncelik sırasıyla, her madde en fazla birkaç saatlik.
 
 ## A. VisionPilot'a katkı adayları
 
@@ -29,15 +45,10 @@ geçerli olduğunu kontrol et.
 
 ## B. Bu repoda derinleştirme
 
-5. [x] 05: ilişkili (AR(1)) gürültü ve kümeli kayıp (`05-integration/notes.md`, "Gürültünün yapısı")
+5. [x] 05: ilişkili (AR(1)) gürültü ve kümeli kayıp (sıra dışı yapıldı) (`05-integration/notes.md`, "Gürültünün yapısı")
 5b. [ ] 05: takip katmanına ilişkili gürültüyü bildir (gürültüyü durum olarak ekle / shaping filter) ve ρ = 0,6'da
    yanal hatanın düşüp düşmediğini ölç
 6. [ ] 04: INT8'in bu CPU'da neden yavaş olduğunu doğrula (`lscpu` bayrakları, onnxruntime profili)
 7. [ ] 04: modelleri `std::async` gibi paralel çalıştırınca kare süresi (ThreadPool ile)
 8. [ ] 02/05: direksiyon gecikmesi (0,24 s) ve hız sınırı ekleyip takipsiz sistemin yanal hatasını yeniden ölç
    (05 notlarında "ölçmedim, çıkarım" olarak geçen iddia)
-
-## C. Öğrenme ürünleri
-
-9. [ ] `docs/glossary.md` tanımları
-10. [ ] Medium yazıları (`docs/writing-plan.md`): 5 yazının hepsi için modül ✅ oldu
