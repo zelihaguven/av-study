@@ -44,8 +44,8 @@ geçerli olduğunu kontrol et.
 ## B. Bu repoda derinleştirme
 
 5. [x] 05: ilişkili (AR(1)) gürültü ve kümeli kayıp (sıra dışı yapıldı) (`05-integration/notes.md`, "Gürültünün yapısı")
-5b. [ ] 05: takip katmanına ilişkili gürültüyü bildir (gürültüyü durum olarak ekle / shaping filter) ve ρ = 0,6'da
-   yanal hatanın düşüp düşmediğini ölç
+5b. [x] 05: durum genişletme denendi: ρ = 0,9'da %22 daha az yanal hata, ölçülen ρ ≈ 0,6'da %4 (ve daha pürüzlü
+   direksiyon). Gerçekçi senaryoda fayda yok.
 6. [x] 04: INT8 yavaşlığı donanımdan değil; QDQ konvolüsyonlar tamsayıya dönüşmüyor (04 notları). Kalan engel bulunmadı.
 7. [x] 04: paralel + intra_op = 1 → 164 ms (6,1 Hz); varsayılan thread ayarıyla paralel daha yavaş
 8. [x] 05: direksiyon gecikmesi ölçüldü (`05-integration/notes.md`, "Direksiyon aktüatörü"). Çıkarım kısmen yanlış;

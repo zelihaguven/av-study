@@ -169,8 +169,19 @@ davranışı birebir koruyor, 05'in testleri ve grafikleri değişmedi):
   aracın filtreleyebildiği frekansın altına iniyor ve doğrudan yola yansıyor.
 - **Takipsiz sistemin direksiyonu yumuşuyor** (126 → 30 °/s), çünkü ölçüm artık yavaş değişiyor. Takip katmanının
   direksiyondaki avantajı 6,4 kattan 3,3 kata düşüyor.
-- Doğru çözüm, filtreye ilişkili gürültüyü bildirmek: gürültüyü ayrı bir durum olarak ekleyip (shaping filter /
-  durum genişletme) filtreye "bu hata kalıcı" demek. Burada yapmadım; `docs/next-steps.md`'ye eklenebilir.
+- Akla gelen çözüm, filtreye ilişkili gürültüyü bildirmek: gürültüyü ayrı bir durum olarak ekleyip (durum genişletme,
+  `LaneTracker(meas_rho=ρ)`, `run(..., tracker_rho=ρ)`) filtreye "bu hata kalıcı" demek. Denedim (5b), 12 koşu:
+
+  | Senaryo | Beyaz varsayan filtre | Gürültüyü durum olarak taşıyan filtre | Takipsiz |
+  |---|---|---|---|
+  | σ 0,3 m, ρ = 0,6 | 25,2 cm / 15 °/s | 24,1 cm / 20 °/s | 21,3 cm / 82 °/s |
+  | σ 0,3 m, ρ = 0,9 | 50,5 cm / 11 °/s | 39,2 cm / 24 °/s | 42,6 cm / 42 °/s |
+  | 04 otoyol, ρ = 0,6 | 2,4 cm / 9 °/s | 2,5 cm / 9 °/s | 2,1 cm / 12 °/s |
+
+  Kazanç sadece yüksek korelasyonda var (ρ = 0,9'da %22) ve direksiyon pürüzlüleşiyor. Ölçülen ρ ≈ 0,6'da
+  (20 Hz'de ~0,1 s korelasyon süresi) filtre kalıcı hatayı yoldaki gerçek değişimden ayıramıyor; süreç gürültüsü
+  `q`'yu değiştirmek de sonucu değiştirmedi. Doğru modellenmiş bir filtre bile, sinyale benzeyen gürültüyü
+  silemiyor. `tests/test_noise_models.py` ρ = 0,9'daki kazancı sabitliyor.
 
 **2. Aynı kayıp oranı (%30), farklı kümelenme:**
 

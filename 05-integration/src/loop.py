@@ -28,7 +28,8 @@ def run(path, v: float, noise, p_drop: float, use_tracker: bool = True,
         use_feedforward: bool = True, seed: int = 0,
         dt: float = 0.05, params: VehicleParams = VehicleParams(),
         tracker_q: tuple[float, float, float] = TRACKER_Q,
-        steer_delay: float = 0.0, steer_tau: float = 0.0) -> IntegrationResult:
+        steer_delay: float = 0.0, steer_tau: float = 0.0,
+        tracker_rho: float = 0.0) -> IntegrationResult:
     """dt = kamera periyodu (20 Hz). Araç modeli 01'deki step ile ilerletilir.
 
     use_tracker=False: ölçüm doğrudan kontrolcüye gider; ölçüm yoksa son ölçüm tutulur.
@@ -42,7 +43,7 @@ def run(path, v: float, noise, p_drop: float, use_tracker: bool = True,
     rng = np.random.default_rng(seed)
     memory = NoiseMemory()        # ilişkili gürültü / kümeli kayıp için (LaneNoise.rho, burst_len)
     state = np.array([path.x[0], path.y[0], path.yaw[0], v])
-    tracker = LaneTracker(params.wheelbase, noise, tracker_q)
+    tracker = LaneTracker(params.wheelbase, noise, tracker_q, meas_rho=tracker_rho)   # tracker_rho: 5b
     held = np.zeros(3)            # tracker'sız modda son geçerli ölçüm
     delta = 0.0
     n_delay = int(round(steer_delay / dt))

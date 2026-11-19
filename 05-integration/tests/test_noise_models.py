@@ -41,3 +41,15 @@ def test_bursty_dropout_rate_and_length():
             runs.append(cur)
             cur = 0
     assert np.mean(runs) == pytest.approx(5.0, rel=0.1)
+
+
+def test_augmented_tracker_helps_with_strongly_correlated_noise():
+    """5b: ρ = 0,9'da gürültüyü durum olarak taşıyan filtre, beyaz varsayan filtreden daha az yanal hata verir."""
+    from loop import run
+    from metrics import rms
+    from paths import s_curve
+    path = s_curve(50.0)
+    noise = LaneNoise(rho=0.9)
+    white = np.mean([rms(run(path, 10.0, noise, p_drop=0.1, seed=s).cte) for s in range(4)])
+    aug = np.mean([rms(run(path, 10.0, noise, p_drop=0.1, seed=s, tracker_rho=0.9).cte) for s in range(4)])
+    assert aug < 0.9 * white

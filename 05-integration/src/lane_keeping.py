@@ -22,13 +22,26 @@ class LaneTracker:
     q = (q_y, q_psi, q_kappa): spektral yoğunluklar, Q = diag(q) · dt.
     """
 
-    def __init__(self, wheelbase: float, noise, q: tuple[float, float, float]):
+    def __init__(self, wheelbase: float, noise, q: tuple[float, float, float], meas_rho: float = 0.0):
+        """meas_rho > 0: ölçüm gürültüsünün AR(1) olduğunu filtreye bildir (durum genişletme, 05 notları 5b).
+        Durum [e_y, e_psi, kappa, n_y, n_psi, n_kappa] olur; z = x + n, n_{k+1} = ρ n_k + w,
+        w'nin varyansı σ²(1 − ρ²) (durağan σ korunur). Çıktı yine ilk üç durum."""
         self.L = wheelbase
         self.q = np.asarray(q, dtype=float)
-        self.H = np.eye(3)
-        self.R = np.diag([noise.sigma_y ** 2, noise.sigma_psi ** 2, noise.sigma_kappa ** 2])
-        # İlk ölçüme kadar belirsizlik büyük: ilk update neredeyse doğrudan ölçümü alır.
-        self.kf = KalmanFilter(np.zeros(3), np.diag([1.0, np.deg2rad(10.0) ** 2, 0.02 ** 2]))
+        self.rho = float(meas_rho)
+        sig2 = np.array([noise.sigma_y ** 2, noise.sigma_psi ** 2, noise.sigma_kappa ** 2])
+        P0 = np.diag([1.0, np.deg2rad(10.0) ** 2, 0.02 ** 2])
+        if self.rho > 0:
+            self.H = np.hstack([np.eye(3), np.eye(3)])
+            self.R = np.diag(sig2) * 1e-4            # gürültü artık durumda; R sayısal kararlılık için küçük
+            self.Qn = np.diag(sig2 * (1 - self.rho ** 2))
+            P0 = np.block([[P0, np.zeros((3, 3))], [np.zeros((3, 3)), np.diag(sig2)]])
+            self.kf = KalmanFilter(np.zeros(6), P0)
+        else:
+            self.H = np.eye(3)
+            self.R = np.diag(sig2)
+            # İlk ölçüme kadar belirsizlik büyük: ilk update neredeyse doğrudan ölçümü alır.
+            self.kf = KalmanFilter(np.zeros(3), P0)
 
     def step(self, z: np.ndarray | None, v: float, delta_prev: float, dt: float) -> np.ndarray:
         """predict + (varsa) update; güncel tahmini döndürür."""
@@ -36,10 +49,16 @@ class LaneTracker:
                       [0.0, 1.0, -v * dt],
                       [0.0, 0.0, 1.0]])
         B = np.array([[0.5 * v * dt ** 2], [dt], [0.0]])
+        Q = np.diag(self.q) * dt
         u = v / self.L * np.tan(delta_prev)
-        self.kf.predict(F, np.diag(self.q) * dt, B, u)
+        if self.rho > 0:
+            Z = np.zeros((3, 3))
+            F = np.block([[F, Z], [Z, self.rho * np.eye(3)]])
+            B = np.vstack([B, np.zeros((3, 1))])
+            Q = np.block([[Q, Z], [Z, self.Qn]])
+        self.kf.predict(F, Q, B, u)
         self.kf.update(z, self.H, self.R)
-        return self.kf.x.copy()
+        return self.kf.x[:3].copy()
 
     @property
     def P(self) -> np.ndarray:
