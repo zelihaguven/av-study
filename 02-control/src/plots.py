@@ -17,13 +17,14 @@ import numpy as np
 from closed_loop import run_closed_loop
 from metrics import max_abs, rms
 from paths import nearest_index, s_curve, straight
+from i18n import L, results_dir
 
-RESULTS = Path(__file__).resolve().parents[1] / "results"
+RESULTS = results_dir(Path(__file__).resolve().parents[1] / "results")
 R, V, DT, LEAD = 50.0, 10.0, 0.02, 20.0
 PATH = s_curve(R)
 SEGMENT_S = [LEAD, LEAD + R * np.pi / 2, LEAD + R * np.pi]   # eğriliğin sıçradığı s değerleri
 COLORS = {"pure_pursuit": "tab:blue", "stanley": "tab:orange"}
-LABELS = {"pure_pursuit": "Pure Pursuit (Ld = max(3, 0,5·v) = 5 m)", "stanley": "Stanley (k = 1, k_soft = 1)"}
+LABELS = {"pure_pursuit": L("Pure Pursuit (Ld = max(3, 0,5·v) = 5 m)", "Pure Pursuit (Ld = max(3, 0.5·v) = 5 m)"), "stanley": "Stanley (k = 1, k_soft = 1)"}
 
 
 def steer_rate(res) -> np.ndarray:
@@ -39,14 +40,14 @@ def segment_times(res) -> list[float]:
 def plot_paths(runs) -> None:
     fig, (ax, axz) = plt.subplots(1, 2, figsize=(12, 5), gridspec_kw={"width_ratios": [1.2, 1]})
     for a in (ax, axz):
-        a.plot(PATH.x, PATH.y, "k--", lw=1.5, label="Referans yol")
+        a.plot(PATH.x, PATH.y, "k--", lw=1.5, label=L("Referans yol", "Reference path"))
         for c, r in runs.items():
             a.plot(r.states[:, 0], r.states[:, 1], color=COLORS[c], lw=1.5, label=LABELS[c])
         a.set_aspect("equal")
         a.grid(alpha=0.3)
         a.set_xlabel("x [m]")
     ax.set_ylabel("y [m]")
-    ax.set_title(f"S-virajı, R = {R:.0f} m, v = {V:.0f} m/s")
+    ax.set_title(L(f"S-virajı, R = {R:.0f} m, v = {V:.0f} m/s", f"S-curve, R = {R:.0f} m, v = {V:.0f} m/s"))
     ax.legend(fontsize=8, loc="upper left")
     # Yakınlaştırma: sol virajın ortası, Pure Pursuit'un içeri kestiği yer
     i = nearest_index(PATH, *[PATH.x[np.argmin(np.abs(PATH.s - (LEAD + R * np.pi / 4)))],
@@ -54,7 +55,7 @@ def plot_paths(runs) -> None:
     cx, cy = PATH.x[i], PATH.y[i]
     axz.set_xlim(cx - 1.0, cx + 1.0)
     axz.set_ylim(cy - 1.0, cy + 1.0)
-    axz.set_title("Yakınlaştırma: sol virajın ortası (2 m × 2 m)")
+    axz.set_title(L("Yakınlaştırma: sol virajın ortası (2 m × 2 m)", "Zoom: middle of the left curve (2 m × 2 m)"))
     ax.add_patch(plt.Rectangle((cx - 4, cy - 4), 8, 8, fill=False, ec="gray"))
     fig.tight_layout()
     fig.savefig(RESULTS / "s_curve_paths.png", dpi=150)
@@ -67,17 +68,17 @@ def plot_cte(runs) -> None:
         ax.plot(r.t, r.cte * 100, color=COLORS[c], label=LABELS[c])
         ax2.plot(r.t[1:], np.rad2deg(steer_rate(r)), color=COLORS[c])
     for a in (ax, ax2):
-        for tb, name in zip(segment_times(runs["stanley"]), ["düz→sol", "sol→sağ", "sağ→düz"]):
+        for tb, name in zip(segment_times(runs["stanley"]), [L("düz→sol", "straight→left"), L("sol→sağ", "left→right"), L("sağ→düz", "right→straight")]):
             a.axvline(tb, color="gray", ls=":", lw=1)
             if a is ax:
                 a.text(tb, 1.0, name, transform=a.get_xaxis_transform(), ha="center", va="bottom", fontsize=8)
         a.grid(alpha=0.3)
     ax.axhline(0, color="k", lw=0.8)
-    ax.set_ylabel("CTE [cm]  (sol +)")
+    ax.set_ylabel(L("CTE [cm]  (sol +)", "CTE [cm]  (left +)"))
     ax.legend(fontsize=8)
-    ax2.set_ylabel("Direksiyon hızı [°/s]")
+    ax2.set_ylabel(L("Direksiyon hızı [°/s]", "Steering rate [°/s]"))
     ax2.set_xlabel("t [s]")
-    fig.suptitle("S-virajında yanal hata ve direksiyon hızı (noktalı çizgiler: eğrilik sıçramaları)")
+    fig.suptitle(L("S-virajında yanal hata ve direksiyon hızı (noktalı çizgiler: eğrilik sıçramaları)", "Cross-track error and steering rate on the S-curve (dotted lines: curvature jumps)"))
     fig.tight_layout()
     fig.savefig(RESULTS / "s_curve_cte.png", dpi=150)
     plt.close(fig)
@@ -102,20 +103,20 @@ def lookahead_sweep():
 
     fig, (ax, axb) = plt.subplots(1, 2, figsize=(12, 4.5))
     ax.plot(lds, np.array(out["rms"]) * 100, "o-", color="tab:blue", ms=4)
-    ax.set_xlabel("İleri bakış mesafesi Ld [m]")
+    ax.set_xlabel(L("İleri bakış mesafesi Ld [m]", "Lookahead distance Ld [m]"))
     ax.set_ylabel("RMS CTE [cm]", color="tab:blue")
     ax.grid(alpha=0.3)
     ax2 = ax.twinx()
     ax2.plot(lds, out["rate"], "s-", color="tab:red", ms=4)
-    ax2.set_ylabel("Maks |direksiyon hızı| [°/s]", color="tab:red")
-    ax.set_title(f"Pure Pursuit, S-virajı, v = {V:.0f} m/s: Ld taraması")
+    ax2.set_ylabel(L("Maks |direksiyon hızı| [°/s]", "Max |steering rate| [°/s]"), color="tab:red")
+    ax.set_title(L(f"Pure Pursuit, S-virajı, v = {V:.0f} m/s: Ld taraması", f"Pure Pursuit, S-curve, v = {V:.0f} m/s: Ld sweep"))
 
     x = np.arange(len(speeds))
-    axb.bar(x - 0.2, np.array(out["fixed5"]) * 100, 0.4, label="Sabit Ld = 5 m")
-    axb.bar(x + 0.2, np.array(out["scaled"]) * 100, 0.4, label="Ld = max(3, 0,5·v)")
+    axb.bar(x - 0.2, np.array(out["fixed5"]) * 100, 0.4, label=L("Sabit Ld = 5 m", "Fixed Ld = 5 m"))
+    axb.bar(x + 0.2, np.array(out["scaled"]) * 100, 0.4, label=L("Ld = max(3, 0,5·v)", "Ld = max(3, 0.5·v)"))
     axb.set_xticks(x, [f"{v:.0f} m/s" for v in speeds])
-    axb.set_ylabel("RMS CTE [cm], S-virajı")
-    axb.set_title("Sabit ve hızla ölçeklenen ileri bakış")
+    axb.set_ylabel(L("RMS CTE [cm], S-virajı", "RMS CTE [cm], S-curve"))
+    axb.set_title(L("Sabit ve hızla ölçeklenen ileri bakış", "Fixed vs speed-scaled lookahead"))
     axb.legend(fontsize=8)
     axb.grid(alpha=0.3, axis="y")
     fig.tight_layout()
@@ -136,14 +137,14 @@ def stanley_softening():
         ax.plot(r.t, r.cte, color=col, label=f"k_soft = {ks}")
         ax2.plot(r.t, np.rad2deg(r.steer), color=col)
     ax2.axhline(-35, color="k", ls=":", lw=1)
-    ax2.text(14.8, -34, "direksiyon sınırı −35°", ha="right", va="bottom", fontsize=8)
+    ax2.text(14.8, -34, L("direksiyon sınırı −35°", "steering limit −35°"), ha="right", va="bottom", fontsize=8)
     ax.set_ylabel("CTE [m]")
     ax.legend(fontsize=8)
-    ax2.set_ylabel("Direksiyon [°]")
+    ax2.set_ylabel(L("Direksiyon [°]", "Steering [°]"))
     ax2.set_xlabel("t [s]")
     for a in (ax, ax2):
         a.grid(alpha=0.3)
-    fig.suptitle(f"Stanley, v = {v:.0f} m/s, 1 m sol ofset, k = 1: yumuşatma terimi k_soft")
+    fig.suptitle(L(f"Stanley, v = {v:.0f} m/s, 1 m sol ofset, k = 1: yumuşatma terimi k_soft", f"Stanley, v = {v:.0f} m/s, 1 m left offset, k = 1: softening term k_soft"))
     fig.tight_layout()
     fig.savefig(RESULTS / "stanley_soft.png", dpi=150)
     plt.close(fig)

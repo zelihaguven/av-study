@@ -3,7 +3,10 @@
 Senaryo testlerdekiyle aynı: CIPO mesafesi, 20 Hz, gerçek ivme gürültüsü q = 0,5, ölçüm std 1 m.
 Çalıştırma (repo kökünden):  python 03-tracking/src/plots.py
 """
+import sys
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "common"))
 
 import matplotlib
 
@@ -12,8 +15,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 from kalman import KalmanFilter, cv_model, nees
+from i18n import L, results_dir
 
-RESULTS = Path(__file__).resolve().parents[1] / "results"
+RESULTS = results_dir(Path(__file__).resolve().parents[1] / "results")
 DT, Q_TRUE, R_STD = 0.05, 0.5, 1.0
 H = np.array([[1.0, 0.0]])
 R = np.array([[R_STD ** 2]])
@@ -54,24 +58,24 @@ def plot_cipo(xs, zs, est, covs):
     sd = np.sqrt(covs[:, 0, 0])
     sv = np.sqrt(covs[:, 1, 1])
     fig, (ax, ax2) = plt.subplots(2, 1, figsize=(10, 6.5), sharex=True, gridspec_kw={"height_ratios": [2, 1]})
-    ax.plot(t, zt, ".", color="0.6", ms=3, label="Ham ölçüm (σ = 1 m)")
-    ax.fill_between(t, est[:, 0] - 2 * sd, est[:, 0] + 2 * sd, color="tab:blue", alpha=0.2, label="Filtre ±2σ")
-    ax.plot(t, est[:, 0], color="tab:blue", lw=1.5, label="Kalman filtresi")
-    ax.plot(t, xs[:, 0], "k", lw=1.2, label="Gerçek mesafe")
-    ax2.plot(t, xs[:, 1], "k", lw=1.2, label="Gerçek göreli hız")
+    ax.plot(t, zt, ".", color="0.6", ms=3, label=L("Ham ölçüm (σ = 1 m)", "Raw measurement (σ = 1 m)"))
+    ax.fill_between(t, est[:, 0] - 2 * sd, est[:, 0] + 2 * sd, color="tab:blue", alpha=0.2, label=L("Filtre ±2σ", "Filter ±2σ"))
+    ax.plot(t, est[:, 0], color="tab:blue", lw=1.5, label=L("Kalman filtresi", "Kalman filter"))
+    ax.plot(t, xs[:, 0], "k", lw=1.2, label=L("Gerçek mesafe", "True distance"))
+    ax2.plot(t, xs[:, 1], "k", lw=1.2, label=L("Gerçek göreli hız", "True relative speed"))
     ax2.fill_between(t, est[:, 1] - 2 * sv, est[:, 1] + 2 * sv, color="tab:blue", alpha=0.2)
-    ax2.plot(t, est[:, 1], color="tab:blue", lw=1.5, label="Kestirim (hız hiç ölçülmüyor)")
+    ax2.plot(t, est[:, 1], color="tab:blue", lw=1.5, label=L("Kestirim (hız hiç ölçülmüyor)", "Estimate (speed is never measured)"))
     for a in (ax, ax2):
         a.axvspan(GAP[0] * DT, GAP[1] * DT, color="tab:red", alpha=0.08)
         a.grid(alpha=0.3)
-    ax.text((GAP[0] + GAP[1]) / 2 * DT, 0.03, "ölçüm yok (2 s)", transform=ax.get_xaxis_transform(),
+    ax.text((GAP[0] + GAP[1]) / 2 * DT, 0.03, L("ölçüm yok (2 s)", "no measurement (2 s)"), transform=ax.get_xaxis_transform(),
             ha="center", va="bottom", color="tab:red", fontsize=9)
-    ax.set_ylabel("Mesafe d [m]")
+    ax.set_ylabel(L("Mesafe d [m]", "Distance d [m]"))
     ax.legend(fontsize=8, loc="upper right", ncol=2)
     ax2.set_ylabel("ḋ [m/s]")
     ax2.set_xlabel("t [s]")
     ax2.legend(fontsize=8, loc="lower left")
-    ax.set_title("CIPO takibi: sabit hız modeli, 20 Hz, q = 0,5 (filtre = gerçek)")
+    ax.set_title(L("CIPO takibi: sabit hız modeli, 20 Hz, q = 0,5 (filtre = gerçek)", "CIPO tracking: constant velocity model, 20 Hz, q = 0.5 (filter = truth)"))
     fig.tight_layout()
     fig.savefig(RESULTS / "cipo.png", dpi=150)
     plt.close(fig)
@@ -91,12 +95,12 @@ def plot_q_sweep(xs, zs):
         ax.plot(t, xs[:, 0], "k", lw=1)
         ax.plot(t, est[:, 0], color="tab:blue", lw=1.5)
         ax.axvspan(GAP[0] * DT, GAP[1] * DT, color="tab:red", alpha=0.08)
-        tag = " (= gerçek)" if q == Q_TRUE else ""
-        ax.set_title(f"q = {q:g}{tag}    q/r = {q / R_STD**2:g}    RMSE(d), ölçüm varken = {out[-1][1]:.2f} m    kesintide maks hata = {out[-1][3]:.1f} m", fontsize=9, loc="left")
+        tag = L(" (= gerçek)", " (= truth)") if q == Q_TRUE else ""
+        ax.set_title(L(f"q = {q:g}{tag}    q/r = {q / R_STD**2:g}    RMSE(d), ölçüm varken = {out[-1][1]:.2f} m    kesintide maks hata = {out[-1][3]:.1f} m", f"q = {q:g}{tag}    q/r = {q / R_STD**2:g}    RMSE(d) with measurements = {out[-1][1]:.2f} m    max error in gap = {out[-1][3]:.1f} m"), fontsize=9, loc="left")
         ax.grid(alpha=0.3)
         ax.set_ylabel("d [m]")
     axes[-1].set_xlabel("t [s]")
-    fig.suptitle("Aynı veri, farklı süreç gürültüsü q (r = 1 m² sabit). Siyah: gerçek, gri: ölçüm, mavi: filtre")
+    fig.suptitle(L("Aynı veri, farklı süreç gürültüsü q (r = 1 m² sabit). Siyah: gerçek, gri: ölçüm, mavi: filtre", "Same data, different process noise q (r = 1 m² fixed). Black: truth, grey: measurement, blue: filter"))
     fig.tight_layout()
     fig.savefig(RESULTS / "q_r_sweep.png", dpi=150)
     plt.close(fig)
@@ -116,15 +120,15 @@ def plot_nees(n_runs=50):
             vals.append(np.mean([nees(xs[k], est[k], covs[k]) for k in range(50, 200)]))
         means.append(float(np.mean(vals)))
     fig, ax = plt.subplots(figsize=(7, 4.5))
-    ax.axhspan(1.48, 2.59, color="tab:green", alpha=0.15, label="Testteki kabul aralığı [1,48; 2,59]")
-    ax.axhline(2.0, color="tab:green", lw=1, ls="--", label="Beklenen değer = durum boyutu = 2")
-    ax.loglog(ratios, means, "o-", color="tab:blue", label="Ortalama NEES (50 koşu)")
+    ax.axhspan(1.48, 2.59, color="tab:green", alpha=0.15, label=L("Testteki kabul aralığı [1,48; 2,59]", "Test acceptance interval [1.48, 2.59]"))
+    ax.axhline(2.0, color="tab:green", lw=1, ls="--", label=L("Beklenen değer = durum boyutu = 2", "Expected value = state dimension = 2"))
+    ax.loglog(ratios, means, "o-", color="tab:blue", label=L("Ortalama NEES (50 koşu)", "Mean NEES (50 runs)"))
     ax.axvline(1.0, color="k", lw=0.8, ls=":")
-    ax.set_xlabel("Filtredeki q / gerçek q")
-    ax.set_ylabel("Ortalama NEES")
-    ax.text(0.012, means[0] * 0.75, "aşırı özgüvenli:\nP gerçek hatadan küçük", fontsize=8, va="top")
-    ax.text(80, 3.2, "aşırı temkinli:\nP gerçek hatadan büyük", fontsize=8, ha="right")
-    ax.set_title("Tutarlılık: NEES, filtrenin kendi belirsizliğini doğru bilip bilmediğini ölçer")
+    ax.set_xlabel(L("Filtredeki q / gerçek q", "Filter q / true q"))
+    ax.set_ylabel(L("Ortalama NEES", "Mean NEES"))
+    ax.text(0.012, means[0] * 0.75, L("aşırı özgüvenli:\nP gerçek hatadan küçük", "overconfident:\nP smaller than true error"), fontsize=8, va="top")
+    ax.text(80, 3.2, L("aşırı temkinli:\nP gerçek hatadan büyük", "overcautious:\nP larger than true error"), fontsize=8, ha="right")
+    ax.set_title(L("Tutarlılık: NEES, filtrenin kendi belirsizliğini doğru bilip bilmediğini ölçer", "Consistency: NEES checks whether the filter knows its own uncertainty"))
     ax.grid(True, which="both", alpha=0.3)
     ax.legend(fontsize=8, loc="upper right")
     fig.tight_layout()

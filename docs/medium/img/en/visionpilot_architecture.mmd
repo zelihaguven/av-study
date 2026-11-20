@@ -1,0 +1,16 @@
+flowchart LR
+    CAM["Camera, single front, 1-2 MP, 52-55° FOV"] -->|"raw frame"| PRE["Preprocessing"]
+    PRE -->|"homography-warped frame 1024x512"| AD["AutoDrive (two frames)"]
+    PRE -->|"cropped frame 1024x512"| AST["AutoSteer"]
+    PRE -->|"cropped frame 1024x512"| ASP["AutoSpeed"]
+    AD -->|"CIPO distance, CIPO probability"| LON["Longitudinal fusion (particle filter)"]
+    ASP -->|"object boxes"| LON
+    AST -->|"ego path points (64)"| LAT["Lateral fusion (RANSAC + particle filter)"]
+    AD -->|"road curvature"| LAT
+    LON -->|"CIPO distance and speed"| IDM["Longitudinal planning (IDM)"]
+    LAT -->|"CTE, heading error, curvature"| MPC["Lateral planning (MPC)"]
+    LAT -->|"curvature (curve speed limit)"| IDM
+    IDM -->|"acceleration command"| VI["Vehicle interface"]
+    MPC -->|"steering command"| VI
+    IDM -->|"acceleration thresholds"| W["FCW / AEB warning"]
+    LAT -->|"CTE threshold"| LDW["LDW warning"]

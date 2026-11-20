@@ -24,8 +24,9 @@ from loop import run
 from metrics import max_abs, rms
 from paths import s_curve
 from perception_sim import LaneNoise
+from i18n import L, results_dir
 
-RESULTS = Path(__file__).resolve().parents[1] / "results"
+RESULTS = results_dir(Path(__file__).resolve().parents[1] / "results")
 PATH = s_curve(50.0)
 V = 10.0
 SEEDS = range(12)
@@ -56,43 +57,43 @@ def main():
 
     fig, axes = plt.subplots(1, 3, figsize=(15, 4.5))
     ax = axes[0]
-    for tr, col, name in [(True, "tab:blue", "Takipli"), (False, "tab:red", "Takipsiz")]:
-        ax.plot(rhos, [s["rms"] * 100 for s in rho_res[tr]], "o-", color=col, label=f"{name}: gerçek CTE")
+    for tr, col, name in [(True, "tab:blue", L("Takipli", "With tracker")), (False, "tab:red", L("Takipsiz", "No tracker"))]:
+        ax.plot(rhos, [s["rms"] * 100 for s in rho_res[tr]], "o-", color=col, label=L(f"{name}: gerçek CTE", f"{name}: true CTE"))
         ax.plot(rhos, [s["seen"] * 100 for s in rho_res[tr]], "s--", color=col, alpha=0.6,
-                label=f"{name}: kontrolcünün gördüğü e_y hatası")
-    ax.set_xlabel("Gürültü korelasyonu ρ (kare başına, 20 Hz)")
+                label=L(f"{name}: kontrolcünün gördüğü e_y hatası", f"{name}: e_y error seen by controller"))
+    ax.set_xlabel(L("Gürültü korelasyonu ρ (kare başına, 20 Hz)", "Noise correlation ρ (per frame, 20 Hz)"))
     ax.set_ylabel("RMS [cm]")
-    ax.set_title("Aynı σ = 0,3 m, artan korelasyon")
+    ax.set_title(L("Aynı σ = 0,3 m, artan korelasyon", "Same σ = 0.3 m, increasing correlation"))
     ax.axvspan(0.55, 0.65, color="tab:green", alpha=0.15)
-    ax.text(0.6, 0.02, "04'te\nölçülen", transform=ax.get_xaxis_transform(), ha="center", fontsize=8)
+    ax.text(0.6, 0.02, L("04'te\nölçülen", "measured\nin 04"), transform=ax.get_xaxis_transform(), ha="center", fontsize=8)
     ax.legend(fontsize=7)
     ax.grid(alpha=0.3)
 
     ax = axes[1]
-    for tr, col, name in [(True, "tab:blue", "Takipli"), (False, "tab:red", "Takipsiz")]:
+    for tr, col, name in [(True, "tab:blue", L("Takipli", "With tracker")), (False, "tab:red", L("Takipsiz", "No tracker"))]:
         ax.plot(rhos, [s["rate"] for s in rho_res[tr]], "o-", color=col, label=name)
-    ax.set_xlabel("Gürültü korelasyonu ρ")
-    ax.set_ylabel("Direksiyon hızı RMS [°/s]")
-    ax.set_title("Korelasyon ve direksiyon pürüzlülüğü")
+    ax.set_xlabel(L("Gürültü korelasyonu ρ", "Noise correlation ρ"))
+    ax.set_ylabel(L("Direksiyon hızı RMS [°/s]", "Steering rate RMS [°/s]"))
+    ax.set_title(L("Korelasyon ve direksiyon pürüzlülüğü", "Correlation and steering roughness"))
     ax.legend(fontsize=8)
     ax.grid(alpha=0.3)
 
     ax = axes[2]
-    xl = ["bağımsız"] + [f"{b:.0f}" for b in bursts[1:]]
+    xl = [L("bağımsız", "independent")] + [f"{b:.0f}" for b in bursts[1:]]
     x = np.arange(len(bursts))
-    for off, tr, col, name in [(-0.2, True, "tab:blue", "Takipli"), (0.2, False, "tab:red", "Takipsiz")]:
+    for off, tr, col, name in [(-0.2, True, "tab:blue", L("Takipli", "With tracker")), (0.2, False, "tab:red", L("Takipsiz", "No tracker"))]:
         med = [s["max_med"] for s in burst_res[tr]]
         worst = [s["max_worst"] for s in burst_res[tr]]
-        ax.bar(x + off, med, 0.4, color=col, alpha=0.8, label=f"{name}: medyan")
-        ax.scatter(x + off, worst, color=col, marker="v", zorder=3, label=f"{name}: en kötü")
+        ax.bar(x + off, med, 0.4, color=col, alpha=0.8, label=L(f"{name}: medyan", f"{name}: median"))
+        ax.scatter(x + off, worst, color=col, marker="v", zorder=3, label=L(f"{name}: en kötü", f"{name}: worst"))
     ax.set_xticks(x, xl)
     ax.set_yscale("log")
-    ax.set_xlabel(f"Ortalama kesinti uzunluğu [kare], kayıp oranı hep %{P_B * 100:.0f}")
+    ax.set_xlabel(L(f"Ortalama kesinti uzunluğu [kare], kayıp oranı hep %{P_B * 100:.0f}", f"Mean gap length [frames], dropout rate always {P_B * 100:.0f}%"))
     ax.set_ylabel("Maks |CTE| [m] (log)")
-    ax.set_title("Aynı kayıp oranı, farklı kümelenme")
+    ax.set_title(L("Aynı kayıp oranı, farklı kümelenme", "Same dropout rate, different clustering"))
     ax.legend(fontsize=7)
     ax.grid(alpha=0.3, axis="y")
-    fig.suptitle("Gürültünün yapısı: S-virajı 10 m/s, 12 koşu")
+    fig.suptitle(L("Gürültünün yapısı: S-virajı 10 m/s, 12 koşu", "Noise structure: S-curve 10 m/s, 12 runs"))
     fig.tight_layout()
     fig.savefig(RESULTS / "noise_structure.png", dpi=150)
     plt.close(fig)

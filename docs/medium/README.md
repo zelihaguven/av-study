@@ -1,5 +1,8 @@
 # Medium yazı taslakları
 
+**English versions:** [`en/`](en/) (posts), [`gorseller/en/`](gorseller/en/) (covers and figures in reading order).
+English figures are generated with `AV_LANG=en` into each module's `results/en/`.
+
 `docs/writing-plan.md`'deki 5 yazının taslakları. Kurallar:
 
 - Yazılar öğrenileni anlatır; Autoware'e katkı yapıldığını ima etmez.

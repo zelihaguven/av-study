@@ -23,16 +23,17 @@ from loop import run
 from metrics import max_abs, rms
 from paths import s_curve
 from perception_sim import LaneNoise
+from i18n import L, results_dir
 
-RESULTS = Path(__file__).resolve().parents[1] / "results"
+RESULTS = results_dir(Path(__file__).resolve().parents[1] / "results")
 PATH = s_curve(50.0)
 V = 10.0
 SEEDS = range(12)
-ACTUATORS = {"ideal": (0.0, 0.0, False), "gecikme 0,24 s": (0.24, 0.0, False),
-             "Autoware (0,24 s + τ 0,27 s)": (0.24, 0.27, False),
-             "Autoware + gecikme telafisi": (0.24, 0.27, True)}
-SCENARIOS = {"05 varsayılanı (σ 0,3 m, %10 kayıp)": (LaneNoise(), 0.1),
-             "04 otoyol (σ 2,4 cm, ρ 0,6)": (LaneNoise(0.024, np.deg2rad(0.26), 0.0003, rho=0.6), 0.0)}
+ACTUATORS = {"ideal": (0.0, 0.0, False), L("gecikme 0,24 s", "delay 0.24 s"): (0.24, 0.0, False),
+             L("Autoware (0,24 s + τ 0,27 s)", "Autoware (0.24 s + τ 0.27 s)"): (0.24, 0.27, False),
+             L("Autoware + gecikme telafisi", "Autoware + delay compensation"): (0.24, 0.27, True)}
+SCENARIOS = {L("05 varsayılanı (σ 0,3 m, %10 kayıp)", "05 default (σ 0.3 m, 10% dropout)"): (LaneNoise(), 0.1),
+             L("04 otoyol (σ 2,4 cm, ρ 0,6)", "04 highway (σ 2.4 cm, ρ 0.6)"): (LaneNoise(0.024, np.deg2rad(0.26), 0.0003, rho=0.6), 0.0)}
 
 
 def stats(noise, p_drop, tracker, delay, tau, comp):
@@ -53,18 +54,18 @@ def main():
     fig, axes = plt.subplots(1, len(SCENARIOS), figsize=(14, 4.8))
     x = np.arange(len(ACTUATORS))
     for ax, sc in zip(axes, SCENARIOS):
-        for off, tr, col, name in [(-0.2, True, "tab:blue", "Takipli"), (0.2, False, "tab:red", "Takipsiz")]:
+        for off, tr, col, name in [(-0.2, True, "tab:blue", L("Takipli", "With tracker")), (0.2, False, "tab:red", L("Takipsiz", "No tracker"))]:
             vals = [table[(sc, a, tr)][0] * 100 for a in ACTUATORS]
             ax.bar(x + off, vals, 0.4, color=col, label=name)
             for xi, v in zip(x + off, vals):
                 ax.text(xi, v, f"{v:.1f}", ha="center", va="bottom", fontsize=8)
         ax.set_xticks(x, [a.replace(" (", "\n(") for a in ACTUATORS], fontsize=8)
-        ax.set_ylabel("RMS gerçek CTE [cm] (log)")
+        ax.set_ylabel(L("RMS gerçek CTE [cm] (log)", "RMS true CTE [cm] (log)"))
         ax.set_yscale("log")
         ax.set_title(sc, fontsize=10)
         ax.grid(alpha=0.3, axis="y")
         ax.legend(fontsize=8)
-    fig.suptitle("Direksiyon aktüatörü gecikmesi: S-virajı 10 m/s, 12 koşu")
+    fig.suptitle(L("Direksiyon aktüatörü gecikmesi: S-virajı 10 m/s, 12 koşu", "Steering actuator delay: S-curve 10 m/s, 12 runs"))
     fig.tight_layout()
     fig.savefig(RESULTS / "actuator_delay.png", dpi=150)
     plt.close(fig)

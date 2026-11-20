@@ -1,0 +1,15 @@
+flowchart LR
+    S[Sensing] -->|"point cloud, camera image, radar objects"| P[Perception]
+    S -->|"point cloud, GNSS pose, IMU"| L[Localization]
+    L -->|"kinematic state (pose + twist)"| P
+    M[(Map)] -->|"vector map, point cloud map"| P
+    M -->|"point cloud map"| L
+    M -->|"vector map (Lanelet2)"| PL[Planning]
+    L -->|"kinematic state, acceleration"| PL
+    P -->|"predicted objects, obstacle point cloud, occupancy grid, traffic lights"| PL
+    PL -->|"route"| P
+    PL -->|"trajectory"| C[Control]
+    L -->|"kinematic state"| C
+    C -->|"control command (steering, speed, acceleration)"| V[Vehicle Interface]
+    V -->|"velocity and steering status"| C
+    V -->|"vehicle twist"| S

@@ -10,15 +10,19 @@ sistematik hata) GÖREMEZ; yalnız kareden kareye titreşimi ölçer.
 from __future__ import annotations
 
 import csv
+import sys
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "common"))
 
 import matplotlib
 
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
+from i18n import L, results_dir
 
-RESULTS = Path(__file__).resolve().parents[1] / "results"
+RESULTS = Path(__file__).resolve().parents[1] / "results"     # CSV'ler burada
 VIDEOS = ["project_video", "challenge_video", "harder_challenge_video"]
 WIN_S = 1.0
 
@@ -99,25 +103,25 @@ def main() -> None:
         s, d = stats[name], stats[name]["data"]
         ax, axh = axes[row]
         valid = d["valid"] > 0
-        ax.plot(d["t"], np.where(valid, d["e_y"], np.nan), ".", ms=2, color="0.6", label="AutoSteer e_y (kare)")
-        ax.plot(d["t"], s["e_y_sm"], color="tab:blue", lw=1.5, label="1 s ortalama")
+        ax.plot(d["t"], np.where(valid, d["e_y"], np.nan), ".", ms=2, color="0.6", label=L("AutoSteer e_y (kare)", "AutoSteer e_y (per frame)"))
+        ax.plot(d["t"], s["e_y_sm"], color="tab:blue", lw=1.5, label=L("1 s ortalama", "1 s average"))
         bad = ~valid
         if bad.any():
-            ax.plot(d["t"][bad], np.zeros(bad.sum()), "|", color="tab:red", ms=10, label="şerit yok")
+            ax.plot(d["t"][bad], np.zeros(bad.sum()), "|", color="tab:red", ms=10, label=L("şerit yok", "no lane"))
         ax.set_ylabel("e_y [m]")
-        ax.set_title(f"{name}: geçerli %{100 * s['valid']:.1f}, en uzun kesinti {s['longest_gap']} kare",
+        ax.set_title(L(f"{name}: geçerli %{100 * s['valid']:.1f}, en uzun kesinti {s['longest_gap']} kare", f"{name}: valid {100 * s['valid']:.1f}%, longest gap {s['longest_gap']} frames"),
                      fontsize=9, loc="left")
         ax.grid(alpha=0.3)
         r = s["e_y_res"][~np.isnan(s["e_y_res"])]
         axh.hist(r * 100, bins=40, color="tab:blue", alpha=0.7)
-        axh.set_title(f"kalan σ = {100 * s['e_y_std']:.1f} cm, ρ₁ = {s['e_y_lag1']:.2f}", fontsize=9)
-        axh.set_xlabel("e_y − ortalama [cm]")
+        axh.set_title(L(f"kalan σ = {100 * s['e_y_std']:.1f} cm, ρ₁ = {s['e_y_lag1']:.2f}", f"residual σ = {100 * s['e_y_std']:.1f} cm, ρ₁ = {s['e_y_lag1']:.2f}"), fontsize=9)
+        axh.set_xlabel(L("e_y − ortalama [cm]", "e_y − average [cm]"))
         axh.grid(alpha=0.3)
     axes[0, 0].legend(fontsize=8, loc="upper right", ncol=3)
     axes[-1, 0].set_xlabel("t [s]")
-    fig.suptitle("AutoSteer → e_y titreşimi, Udacity videoları (25 fps)")
+    fig.suptitle(L("AutoSteer → e_y titreşimi, Udacity videoları (25 fps)", "AutoSteer → e_y jitter, Udacity videos (25 fps)"))
     fig.tight_layout()
-    fig.savefig(RESULTS / "noise.png", dpi=150)
+    fig.savefig(results_dir(RESULTS) / "noise.png", dpi=150)
     plt.close(fig)
 
 
