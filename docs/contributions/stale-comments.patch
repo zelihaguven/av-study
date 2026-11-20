@@ -1,0 +1,127 @@
+From 070f7a6061992dd25f0ef174b754ae7d088b790c Mon Sep 17 00:00:00 2001
+From: av-study <noreply@example.com>
+Date: Fri, 20 Nov 2026 07:12:59 +0000
+Subject: [PATCH] docs(VisionPilot): fix comments that no longer match the code
+
+Comment-only changes, no functional impact:
+
+- auto_speed.hpp: preprocessing is a 2:1 top crop + resize, not a letterbox
+  with 114 padding.
+- image_preprocessor.hpp: the C warp produces the canonical ZOD model-view
+  perspective image for AutoDrive, not a BEV.
+- lateral_fusion.hpp: CTE/yaw are evaluated at x_ref (nearest observed
+  waypoint), not at x = 0; RANSAC comments no longer quote numbers that
+  differ from the actual values (0.20 m, 12 inliers).
+- planning/config.hpp: closing namespace comment.
+---
+ .../models/include/models/auto_speed.hpp      |  6 +++---
+ .../fusion/include/fusion/lateral_fusion.hpp  | 21 ++++++++++---------
+ .../planning/include/planning/config.hpp      |  2 +-
+ .../image_preprocessor.hpp                    |  2 +-
+ 4 files changed, 16 insertions(+), 15 deletions(-)
+
+diff --git a/VisionPilot/modules/models/include/models/auto_speed.hpp b/VisionPilot/modules/models/include/models/auto_speed.hpp
+index 966ffee5..68950c1a 100644
+--- a/VisionPilot/modules/models/include/models/auto_speed.hpp
++++ b/VisionPilot/modules/models/include/models/auto_speed.hpp
+@@ -13,7 +13,7 @@ namespace visionpilot::models
+     // ─── Output ───────────────────────────────────────────────────────────────────
+     // Bounding boxes in model-input pixel space (1024 × 512) after NMS.
+     // Coordinate mapping back to original image coordinates is the caller's job
+-    // (reverse the letterbox: subtract pad, divide by scale).
++    // (reverse the top crop and resize, see image_preprocessor.cpp).
+     struct Detection
+     {
+         float x1 = 0.f, y1 = 0.f; // top-left
+@@ -32,8 +32,8 @@ namespace visionpilot::models
+     // YOLO-style object detection model.
+     //
+     // Preprocessing contract (caller, before infer()):
+-    //   • Letterbox-resize frame to NET_W × NET_H (1024 × 512),
+-    //     preserving aspect ratio, padding with (114, 114, 114)
++    //   • Top-crop frame to 2:1 and resize to NET_W × NET_H (1024 × 512),
++    //     no letterbox / padding (see image_preprocessor.cpp)
+     //   • Convert BGR → RGB
+     //   • Scale to [0, 1] — NO ImageNet normalisation
+     //   • Layout: CHW float32, CHW_SIZE elements
+diff --git a/VisionPilot/modules/safety_guardian/fusion/include/fusion/lateral_fusion.hpp b/VisionPilot/modules/safety_guardian/fusion/include/fusion/lateral_fusion.hpp
+index fee9d461..4068da24 100644
+--- a/VisionPilot/modules/safety_guardian/fusion/include/fusion/lateral_fusion.hpp
++++ b/VisionPilot/modules/safety_guardian/fusion/include/fusion/lateral_fusion.hpp
+@@ -31,8 +31,8 @@ struct LateralFusionEstimate {
+ 
+     // ── Raw intermediates for debug / downstream use ───────────────────────────
+     bool  path_valid         = false;  // RANSAC polynomial fit succeeded
+-    float raw_cte_m          = 0.f;   // CTE direct from polynomial (= c-coeff)
+-    float raw_yaw_rad        = 0.f;   // yaw direct from polynomial (= atan(b))
++    float raw_cte_m          = 0.f;   // CTE direct from polynomial, y(x_ref)
++    float raw_yaw_rad        = 0.f;   // yaw direct from polynomial, atan(2a·x_ref + b)
+     float raw_path_curvature = 0.f;   // κ sampled along fitted path (median)
+     float raw_ad_curvature   = 0.f;   // curvature_raw from AutoDrive (scaled)
+     int   path_inliers       = 0;     // RANSAC inlier count
+@@ -52,7 +52,8 @@ struct LateralFusionEstimate {
+ //       u = xp[i] * 1024, v = image row i; mask with h_vector >= 0.5.
+ //    2. 2nd-order polynomial RANSAC on world points:
+ //         y_lateral = a·x² + b·x + c
+-//       → CTE = c, Yaw = atan(b), Curvature = median κ(x) at waypoint x in [curv_x_min, curv_x_max]
++//       → CTE = y(x_ref), Yaw = atan(2a·x_ref + b), x_ref = nearest observed waypoint (no extrapolation to x = 0);
++//         Curvature = median κ(x) at waypoint x in [curv_x_min, curv_x_max]
+ //    3. CTE/Yaw particle filter: state [cte, cte_dot, epsi, epsi_dot],
+ //       constant-velocity predict; measure cte/epsi when path is valid.
+ //    4. Curvature particle filter: state [curv], fuses
+@@ -85,11 +86,11 @@ public:
+         float meas_noise_curv_ad     = 0.010f;  // AutoDrive curvature (scaled)
+ 
+         // RANSAC polynomial fit
+-        // thresh raised 0.20→0.25 m: AutoSteer waypoints spread more laterally
+-        // in close-following / occlusion scenarios; 20cm was too tight.
+-        // min_inliers lowered 20→15: requiring 70% consensus from ~28 pts was
+-        // too strict when a lead vehicle scatters some waypoints. 54% is still
+-        // majority agreement and keeps bad fits from passing.
++        // ransac_thresh_m: AutoSteer waypoints spread laterally in close-following /
++        // occlusion scenarios, so the tolerance should not be too tight.
++        // ransac_min_inliers: a lead vehicle can scatter some waypoints, so the
++        // required consensus is below the full point count (~28) but still keeps
++        // bad fits from passing. See the values below.
+         float ransac_thresh_m        = 0.20f;   // lateral inlier tolerance [m]
+         int   ransac_iters           = 80;      // more iterations → better coverage in occlusion
+         int   ransac_min_pts         = 5;       // min projected points to attempt fit
+@@ -130,8 +131,8 @@ private:
+         float a         = 0.f;        // y = a·x² + b·x + c
+         float b         = 0.f;
+         float c         = 0.f;
+-        float cte_m     = 0.f;        // = c
+-        float yaw_rad   = 0.f;        // = atan(b)
++        float cte_m     = 0.f;        // = y(x_ref)
++        float yaw_rad   = 0.f;        // = atan(2a·x_ref + b)
+         float curvature = 0.f;        // median κ(x) along path
+         int   inliers   = 0;
+         float x_min_m   = 0.f;        // min forward x among fit points (inliers)
+diff --git a/VisionPilot/modules/safety_guardian/planning/include/planning/config.hpp b/VisionPilot/modules/safety_guardian/planning/include/planning/config.hpp
+index 8fdcf2a7..a6a0e5a7 100644
+--- a/VisionPilot/modules/safety_guardian/planning/include/planning/config.hpp
++++ b/VisionPilot/modules/safety_guardian/planning/include/planning/config.hpp
+@@ -12,6 +12,6 @@ namespace planning
+     inline constexpr double dt = 0.05;
+ 
+     inline constexpr std::size_t N{20};
+-} // namespace visionpilot::models
++} // namespace planning
+ 
+ #endif //VISIONPILOT_PLANNING_CONFIG_HPP
+diff --git a/VisionPilot/modules/sensing/image_preprocessing/include/image_preprocessing/image_preprocessor.hpp b/VisionPilot/modules/sensing/image_preprocessing/include/image_preprocessing/image_preprocessor.hpp
+index b36ec14d..80ac7b3c 100644
+--- a/VisionPilot/modules/sensing/image_preprocessing/include/image_preprocessing/image_preprocessor.hpp
++++ b/VisionPilot/modules/sensing/image_preprocessing/include/image_preprocessing/image_preprocessor.hpp
+@@ -11,7 +11,7 @@ public:
+ 
+     void preprocess(const cv::Mat &image, cv::Mat &warped_image, cv::Mat &resized_image, const cv::Size &size) const;
+ 
+-    // C maps raw camera pixel → warped 1024×512 BEV (perspective transform).
++    // C maps raw camera pixel → canonical (ZOD model-view) 1024×512 perspective image used by AutoDrive (not a BEV).
+     const cv::Mat& C_mat()   const { return C_; }
+ 
+ private:
+-- 
+2.43.0
+

@@ -1,7 +1,8 @@
 # Katkı taslakları
 
 VisionPilot (`autowarefoundation/autoware.privately-owned-vehicles`) için hazırlanan issue/PR taslakları.
-**Hiçbiri gönderilmedi;** göndermek kullanıcının kararı. Her taslağın sonunda bir "göndermeden önce" listesi var.
+**Hiçbiri gönderilmedi.** Bu oturumun upstream repoya yazma yetkisi yok; gönderim adımları ve kopyala-yapıştır hazır
+metinler: [`SUBMIT.md`](SUBMIT.md). Yorum düzeltmeleri hazır patch olarak: [`stale-comments.patch`](stale-comments.patch).
 
 | Taslak | Tür | Güven | Özet |
 |---|---|---|---|
