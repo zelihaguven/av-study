@@ -1,5 +1,7 @@
 # av-study — Otonom Araç Mimarisi Çalışma Reposu
 
+[![tests](https://github.com/zelihaguven/av-study/actions/workflows/tests.yml/badge.svg)](https://github.com/zelihaguven/av-study/actions/workflows/tests.yml)
+
 Otonom sürüş yazılım mimarisini modül modül, **çalışan kod ve ölçülebilir kabul kriterleriyle**
 öğrenmek için tutulan çalışma reposu. Hedef referans sistem: Autoware ekosistemi ve özellikle
 tek kameralı L2 ADAS sistemi **VisionPilot** (Autoware Privately Owned Vehicle Working Group).
@@ -75,6 +77,14 @@ pytest
 
 - [`docs/glossary.md`](docs/glossary.md) — terimler sözlüğü (TR/EN)
 - [`docs/writing-plan.md`](docs/writing-plan.md) — modül ↔ Medium yazısı eşleşmesi
+- [`docs/medium/`](docs/medium/) — 5 Medium yazısı taslağı (Türkçe), [`docs/medium/en/`](docs/medium/en/) İngilizce
+  sürümleri; kapaklar ve yazı sırasıyla numaralı görseller [`docs/medium/gorseller/`](docs/medium/gorseller/) altında
+- [`docs/contributions/`](docs/contributions/) — VisionPilot için issue/PR taslakları ve gönderim rehberi
+  ([`SUBMIT.md`](docs/contributions/SUBMIT.md)); hiçbiri gönderilmedi
+- [`docs/next-steps.md`](docs/next-steps.md) — ana listeden sonra yapılan ek işler ve sonuçları
+
+Grafikler varsayılan olarak Türkçe etiketlidir; `AV_LANG=en` ile çalıştırılan çizim betikleri İngilizce sürümleri
+her modülün `results/en/` klasörüne yazar (örnek: `AV_LANG=en python 02-control/src/plots.py`).
 
 ## Lisans
 
