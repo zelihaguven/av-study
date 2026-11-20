@@ -9,7 +9,9 @@ English figures are generated with `AV_LANG=en` into each module's `results/en/`
 - Sayılar ve grafikler repodaki koddan; her yazı ilgili klasöre ve `results/` grafiğine link verir.
 - Linkler `main` dalına göre: yayımlamadan önce `claude/kind-ride-m3ydf3` dalının `main`'e birleştirilmiş olması gerekir.
 - Görseller Medium'a ayrıca yüklenir. Hepsi [`gorseller/`](gorseller/) altında, yazı başına bir klasörde ve yazıdaki
-  sırayla numaralı: `00_kapak.png` (kapak), `01_…`, `02_…`. Yeniden üretmek için `python docs/medium/make_images.py`.
+  sırayla numaralı: `00_kapak.png` (kapak), `01_…`, `02_…`. Medium'da tablo olmadığı için tablolar da görsel olarak
+  (`NN_tablo_K.png`) aynı sıraya eklendi. Her klasördeki `SIRA.md` (İngilizcede `ORDER.md`) hangi dosyanın neyi
+  gösterdiğini ve hangi paragraftan sonra geldiğini listeler. Yeniden üretmek için `python docs/medium/make_images.py`.
 - Yayımlamadan önce kendi sesinle gözden geçir; bunlar taslak.
 
 | # | Dosya | Modül |
