@@ -59,7 +59,14 @@ eğrilik ileri beslemeli Stanley tipi kontrol → araç. Yol yine 50 m'lik S-vir
 | Filtresiz | 29 cm | 13,7 cm | 130 °/s |
 | Filtreli | 8 cm | 15,2 cm | 19 °/s |
 
-İlk baktığımda bunu bir ayar hatası sandım. Filtre kontrolcünün gördüğü hatayı 3,5 kat azaltıyor, ama aracın
+Önce 3. yazıdaki sözü tutayım: Stanley'nin virajda bıraktığı kalıcı sapma burada da var ve ileri besleme onu
+kaldırıyor. Gürültüsüz algıda eğrilik ileri beslemesi kapalıyken araç virajın dışına 58 cm kayıyor, açıkken
+en büyük sapma 3,5 cm. 58 cm elle de bulunuyor: 50 m'lik virajı dönmek için gereken 3,1°'lik direksiyonu geri
+besleme ancak `11 · tan 3,1° ≈ 0,59 m`'lik bir hata görünce üretiyor.
+
+![İleri besleme açık / kapalı](05-integration/results/ff_ablation.png)
+
+Asıl soru filtre. İlk baktığımda tablodaki sonucu bir ayar hatası sandım. Filtre kontrolcünün gördüğü hatayı 3,5 kat azaltıyor, ama aracın
 gerçek yanal hatası aynı kalıyor. Filtrenin ayarlarını taradım, gürültüyü tamamen kapattım: sonuç değişmedi.
 
 Sebep şu: **araç kendisi bir alçak geçiren filtre.** Direksiyon açısı yanal konumu iki kez entegre ederek
@@ -71,7 +78,12 @@ Peki filtre gereksiz mi? Hayır, iki yerde vazgeçilmez:
 1. **Direksiyon:** 130 °/s'lik bir komut hem konforsuz hem de gerçek bir direksiyon aktüatörünün yapamayacağı
    bir şey. Modelde direksiyon ideal (gecikmesiz) olduğu için bu fark simülasyonda yanal hataya yansımıyor.
    Autoware'in direksiyon gecikmesi değerlerini (0,24 s + 0,27 s) ekleyince ise bu kontrolcü filtreli de
-   filtresiz de kararsızlaşıyor: gerçek araçta önce gecikmeyi hesaba katan bir kontrolcü gerekiyor.
+   filtresiz de kararsızlaşıyor: gürültü olmasa bile araç 3,4 m sapıyor. Çözüm gecikme telafisi: kontrolcü
+   durumu, komutun tekerleğe ulaşacağı ana kadar ileri tahmin edip ona göre direksiyon veriyor. Böylece hata
+   173 cm'den 15 cm'ye iniyor. Bir ders daha: filtre de tahmin adımında komutu değil tekerleğe gerçekten geçen
+   açıyı kullanmalı, yoksa telafi filtreli sistemde işe yaramıyor.
+
+   ![Direksiyon gecikmesi](05-integration/results/actuator_delay.png)
 2. **Uzun kesintiler:** Algı kaybı arttıkça fark açılıyor.
 
 ![Kayıp taraması](05-integration/results/dropout_sweep.png)

@@ -19,7 +19,7 @@ Autoware'de veri şöyle akıyor:
 - **Control:** "Bu yörüngeyi izlemek için direksiyonu ne kadar çevireyim?" Yaklaşık 33 Hz.
 - **Vehicle interface:** Komutu araca iletir, aracın durumunu geri okur.
 
-![Autoware veri akışı](00-architecture/architecture.md içindeki 1. Mermaid diyagramı)
+![Autoware veri akışı](docs/medium/img/autoware_mimari.png)
 
 Diyagramı çizerken iki şey beni şaşırttı. Birincisi, oklar sanıldığı kadar tek yönlü değil: localization
 perception'ı besliyor (nesneleri haritaya yerleştirmek için önce aracın kendi konumu gerekiyor), planning de
@@ -46,7 +46,7 @@ HD harita yok, LiDAR yok. README modelleri özelliklerle eşleştirmediği için
 4. **Planlama/kontrol:** boylamsalda IDM (öndeki araca göre hız), yanalda MPC (10 m ileri bakan optimizasyon).
 5. **Uyarılar:** FCW, AEB, LDW için sabit eşikler.
 
-![VisionPilot veri akışı](00-architecture/architecture.md içindeki 2. Mermaid diyagramı)
+![VisionPilot veri akışı](docs/medium/img/visionpilot_mimari.png)
 
 Burada da sürprizler vardı. Önceki VisionPilot anlatımlarında geçen EgoLanes modeli 1.0'ın ana uygulamasında
 artık kullanılmıyor. Kodda bir de küçük tutarsızlık buldum: bir yorum "50 Hz kontrol periyodu" derken değer
