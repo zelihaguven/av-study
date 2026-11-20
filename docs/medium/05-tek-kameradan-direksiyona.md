@@ -84,6 +84,7 @@ Peki filtre gereksiz mi? Hayır, iki yerde vazgeçilmez:
    açıyı kullanmalı, yoksa telafi filtreli sistemde işe yaramıyor.
 
    ![Direksiyon gecikmesi](05-integration/results/actuator_delay.png)
+
 2. **Uzun kesintiler:** Algı kaybı arttıkça fark açılıyor.
 
 ![Kayıp taraması](05-integration/results/dropout_sweep.png)
@@ -111,8 +112,7 @@ direksiyon girdisiyle durumu ileri taşıyor.
   algı kaybolduğunda ayakta kalmak.
 - Bir algı modelini değerlendirirken titreşimin büyüklüğü kadar yapısı da önemli: ilişkili hatalar ve kümeli
   kayıplar filtrenin avantajını eritiyor.
-- Gerçek başarısızlıklar (firkete, parlama) Gaussian modellerin dışında kalıyor. Firketede ilk suçladığım son
-  işleme çıktı ama değildi: daha esnek bir uydurma denedim, iyileşmedi; bozuk olan modelin kaputun önündeki
+- Gerçek başarısızlıklar (firkete, parlama) Gaussian modellerin dışında kalıyor. Firketede ilk suçladığım son işlemeydi ama sorun orada değildi: daha esnek bir uydurma denedim, iyileşmedi; bozuk olan modelin kaputun önündeki
   noktalarıydı. "Bir hipotezi gerçek veride test et" dersi.
 
 Bu oyuncak sistem VisionPilot'tan birçok yerde farklı: algı burada doğrudan yanal hata veriyor, kontrolcü
